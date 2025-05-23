@@ -1,3 +1,4 @@
+<?php if (session_status() == PHP_SESSION_NONE) { session_start(); } ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,6 +151,32 @@
         <!-- Main Content -->
         <main id="main-content" class="flex-1 overflow-auto transition-all duration-300 lg:ml-64 ml-0">
             <div class="py-6 px-4 sm:px-6 lg:px-8">
+                <!-- Session Messages -->
+                <?php if (isset($_SESSION['success_message'])): ?>
+                    <div id="session-success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Success!</strong>
+                        <span class="block sm:inline"><?php echo $_SESSION['success_message']; ?></span>
+                    </div>
+                    <?php unset($_SESSION['success_message']); ?>
+                <?php endif; ?>
+                <?php if (isset($_SESSION['error_message'])): ?>
+                    <div id="session-error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline"><?php echo $_SESSION['error_message']; ?></span>
+                    </div>
+                    <?php unset($_SESSION['error_message']); ?>
+                <?php endif; ?>
+
+                <!-- AJAX Message Placeholders -->
+                <div id="ajax-success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Success!</strong>
+                    <span class="block sm:inline" id="ajax-success-text"></span>
+                </div>
+                <div id="ajax-error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Error!</strong>
+                    <span class="block sm:inline" id="ajax-error-text"></span>
+                </div>
+
                 <!-- Page Header -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
                     <h1 class="text-2xl font-bold text-gray-900">Properties</h1>
@@ -242,41 +269,78 @@
                         
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Amenities</label>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                            <div id="amenities-filter-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                <!-- Amenity IDs are from database.sql pre-population -->
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="wifi" class="mr-2">
-                                    <label for="wifi" class="text-sm text-gray-600 flex items-center">
+                                    <input type="checkbox" id="amenity-wifi" name="amenities[]" value="1" class="mr-2 filter-input">
+                                    <label for="amenity-wifi" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-wifi text-gray-400 mr-1"></i> WiFi
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="ac" class="mr-2">
-                                    <label for="ac" class="text-sm text-gray-600 flex items-center">
-                                        <i class="fas fa-wind text-gray-400 mr-1"></i> AC
-                                    </label>
-                                </div>
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="food" class="mr-2">
-                                    <label for="food" class="text-sm text-gray-600 flex items-center">
+                                    <input type="checkbox" id="amenity-food" name="amenities[]" value="2" class="mr-2 filter-input">
+                                    <label for="amenity-food" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-utensils text-gray-400 mr-1"></i> Food
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="tv" class="mr-2">
-                                    <label for="tv" class="text-sm text-gray-600 flex items-center">
+                                    <input type="checkbox" id="amenity-tv" name="amenities[]" value="3" class="mr-2 filter-input">
+                                    <label for="amenity-tv" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-tv text-gray-400 mr-1"></i> TV
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="bathroom" class="mr-2">
-                                    <label for="bathroom" class="text-sm text-gray-600 flex items-center">
+                                    <input type="checkbox" id="amenity-bathroom" name="amenities[]" value="4" class="mr-2 filter-input">
+                                    <label for="amenity-bathroom" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-bath text-gray-400 mr-1"></i> Attached Bathroom
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="refrigerator" class="mr-2">
-                                    <label for="refrigerator" class="text-sm text-gray-600 flex items-center">
+                                    <input type="checkbox" id="amenity-refrigerator" name="amenities[]" value="5" class="mr-2 filter-input">
+                                    <label for="amenity-refrigerator" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-snowflake text-gray-400 mr-1"></i> Refrigerator
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-ac" name="amenities[]" value="6" class="mr-2 filter-input">
+                                    <label for="amenity-ac" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-wind text-gray-400 mr-1"></i> AC
+                                    </label>
+                                </div>
+                                 <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-gym" name="amenities[]" value="7" class="mr-2 filter-input">
+                                    <label for="amenity-gym" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-dumbbell text-gray-400 mr-1"></i> Gym
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-laundry" name="amenities[]" value="8" class="mr-2 filter-input">
+                                    <label for="amenity-laundry" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-tshirt text-gray-400 mr-1"></i> Laundry
+                                    </label>
+                                </div>
+                                 <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-study" name="amenities[]" value="9" class="mr-2 filter-input">
+                                    <label for="amenity-study" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-book text-gray-400 mr-1"></i> Study Room
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-parking" name="amenities[]" value="10" class="mr-2 filter-input">
+                                    <label for="amenity-parking" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-parking text-gray-400 mr-1"></i> Parking
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-security" name="amenities[]" value="11" class="mr-2 filter-input">
+                                    <label for="amenity-security" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-shield-alt text-gray-400 mr-1"></i> 24/7 Security
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="amenity-power" name="amenities[]" value="12" class="mr-2 filter-input">
+                                    <label for="amenity-power" class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-bolt text-gray-400 mr-1"></i> Power Backup
                                     </label>
                                 </div>
                             </div>
@@ -297,9 +361,9 @@
                 <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                         <div class="flex items-center mb-4 sm:mb-0">
-                            <input type="checkbox" id="select-all" class="mr-2">
+                            <input type="checkbox" id="select-all" class="mr-2 filter-input">
                             <label for="select-all" class="text-sm font-medium text-gray-700">Select All</label>
-                            <span class="ml-2 text-sm text-gray-500" id="selected-count">(0 selected)</span>
+                            <span class="ml-2 text-sm text-gray-500" id="selected-count-display">(0 selected)</span>
                         </div>
                         
                         <div class="flex flex-wrap gap-2">
@@ -355,8 +419,10 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Property 1 -->
+                            <tbody id="propertiesTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Property rows will be injected here by JavaScript -->
+                                <!-- Example of a single row structure (for reference, will be removed) -->
+                                <!--
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <input type="checkbox" class="property-select" data-id="1">
@@ -678,53 +744,16 @@
                     </div>
                 </div>
 
+                                </tr>
+                                -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Pagination -->
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Previous
-                        </a>
-                        <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Next
-                        </a>
-                    </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700">
-                                Showing <span class="font-medium">1</span> to <span class="font-medium">6</span> of <span class="font-medium">27</span> results
-                            </p>
-                        </div>
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Previous</span>
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
-                                <a href="#" aria-current="page" class="z-10 bg-[#1a4977] border-[#1a4977] text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                                    1
-                                </a>
-                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                                    2
-                                </a>
-                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hidden md:inline-flex relative items-center px-4 py-2 border text-sm font-medium">
-                                    3
-                                </a>
-                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                                    ...
-                                </span>
-                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hidden md:inline-flex relative items-center px-4 py-2 border text-sm font-medium">
-                                    4
-                                </a>
-                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                                    5
-                                </a>
-                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Next</span>
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </nav>
-                        </div>
-                    </div>
+                <div id="paginationControls" class="flex items-center justify-between">
+                    <!-- Pagination will be injected here by JavaScript -->
                 </div>
             </div>
         </main>
@@ -792,55 +821,380 @@
             // Price range slider
             const priceRange = document.getElementById('price-range');
             const priceDisplay = document.getElementById('price-display');
+            const propertiesTableBody = document.getElementById('propertiesTableBody');
+            const paginationControls = document.getElementById('paginationControls');
+            const selectedCountDisplay = document.getElementById('selected-count-display');
+            const selectAllCheckbox = document.getElementById('select-all');
             
-            priceRange.addEventListener('input', function() {
-                priceDisplay.textContent = '₹' + parseInt(this.value).toLocaleString();
+            // Bulk action buttons
+            const bulkActivateBtn = document.getElementById('bulk-activate');
+            const bulkDeactivateBtn = document.getElementById('bulk-deactivate');
+            const bulkDeleteBtn = document.getElementById('bulk-delete');
+            const bulkExportBtn = document.getElementById('bulk-export'); // Export not implemented in backend yet
+
+            // Modals
+            const deleteModal = document.getElementById('delete-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete');
+            const confirmDeleteBtn = document.getElementById('confirm-delete');
+            const bulkDeleteModal = document.getElementById('bulk-delete-modal');
+            const cancelBulkDeleteBtn = document.getElementById('cancel-bulk-delete');
+            const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete');
+            let propertyIdToDelete = null;
+
+            let currentPage = 1;
+            let currentFilters = {};
+
+            function displayAjaxMessage(type, message) {
+                const successDiv = document.getElementById('ajax-success-message');
+                const errorDiv = document.getElementById('ajax-error-message');
+                const successText = document.getElementById('ajax-success-text');
+                const errorText = document.getElementById('ajax-error-text');
+
+                successDiv.classList.add('hidden');
+                errorDiv.classList.add('hidden');
+
+                if (type === 'success') {
+                    successText.textContent = message;
+                    successDiv.classList.remove('hidden');
+                } else if (type === 'error') {
+                    errorText.textContent = message;
+                    errorDiv.classList.remove('hidden');
+                }
+            }
+            
+            async function fetchProperties(page = 1, filters = {}) {
+                currentPage = page;
+                currentFilters = filters;
+                const params = new URLSearchParams({ page, ...filters });
+                
+                // Collect amenities
+                const amenityCheckboxes = document.querySelectorAll('#amenities-filter-container input[name="amenities[]"]:checked');
+                amenityCheckboxes.forEach(cb => params.append('amenities[]', cb.value));
+
+                try {
+                    const response = await fetch(`handle_get_properties.php?${params.toString()}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    renderTable(data.properties);
+                    renderPagination(data.pagination);
+                    updateSelectedCount(); // Reset selection states on new data load
+                } catch (error) {
+                    console.error('Error fetching properties:', error);
+                    propertiesTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Failed to load properties. ' + error.message + '</td></tr>';
+                    displayAjaxMessage('error', 'Failed to load properties: ' + error.message);
+                }
+            }
+
+            function renderTable(properties) {
+                propertiesTableBody.innerHTML = ''; // Clear existing rows
+                if (properties.length === 0) {
+                    propertiesTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No properties found.</td></tr>';
+                    return;
+                }
+
+                properties.forEach(property => {
+                    const row = document.createElement('tr');
+                    // Default image or actual image
+                    const imageUrl = property.main_image_path || 'https://via.placeholder.com/80x80?text=No+Image';
+                    
+                    // Status badge
+                    let statusBadge;
+                    switch (property.status) { // Assuming 'status' from DB is 'available', 'unavailable', 'booked'
+                        case 'available':
+                            statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>';
+                            break;
+                        case 'unavailable':
+                            statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Inactive</span>';
+                            break;
+                        case 'booked':
+                             statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Booked</span>';
+                            break;
+                        default: // Should map to Draft/Pending from form if those are stored differently
+                            statusBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${property.status || 'N/A'}</span>`;
+                    }
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input type="checkbox" class="property-select filter-input" data-id="${property.id}">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
+                                    <img src="../${imageUrl}" alt="${property.name}" class="h-full w-full object-cover">
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${property.name}</div>
+                                    <!-- Rating can be added here if available in property object -->
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${property.property_type || 'N/A'}</div>
+                            <div class="text-xs text-blue-600">${property.property_category || 'N/A'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${property.address || 'N/A'}</div>
+                            <div class="text-xs text-gray-500">${property.landmark || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">₹${Number(property.base_price || 0).toLocaleString()}/month</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${statusBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${new Date(property.created_at).toLocaleDateString()}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="edit-property.php?id=${property.id}" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="../view-details.php?id=${property.id}" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="text-red-600 hover:text-red-900 delete-property-btn" data-id="${property.id}" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    propertiesTableBody.appendChild(row);
+                });
+                // Re-attach event listeners for new delete buttons and checkboxes
+                attachRowEventListeners();
+            }
+
+            function renderPagination(pagination) {
+                paginationControls.innerHTML = ''; // Clear existing pagination
+                if (!pagination || pagination.total_pages <= 1) {
+                    paginationControls.innerHTML = '<p class="text-sm text-gray-700">Showing <span class="font-medium">' + pagination.total_records + '</span> results</p>';
+                    return;
+                }
+
+                let html = `<div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Showing <span class="font-medium">${(pagination.current_page - 1) * pagination.limit + 1}</span> 
+                                        to <span class="font-medium">${Math.min(pagination.current_page * pagination.limit, pagination.total_records)}</span> 
+                                        of <span class="font-medium">${pagination.total_records}</span> results
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">`;
+                
+                // Previous button
+                html += `<button onclick="fetchProperties(${pagination.current_page - 1}, currentFilters)" 
+                                 class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${pagination.current_page === 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+                                 ${pagination.current_page === 1 ? 'disabled' : ''}>
+                            <span class="sr-only">Previous</span><i class="fas fa-chevron-left"></i>
+                         </button>`;
+
+                // Page numbers
+                for (let i = 1; i <= pagination.total_pages; i++) {
+                    if (i === pagination.current_page) {
+                        html += `<button aria-current="page" class="z-10 bg-[#1a4977] border-[#1a4977] text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">${i}</button>`;
+                    } else {
+                        html += `<button onclick="fetchProperties(${i}, currentFilters)" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">${i}</button>`;
+                    }
+                }
+
+                // Next button
+                html += `<button onclick="fetchProperties(${pagination.current_page + 1}, currentFilters)"
+                                 class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${pagination.current_page === pagination.total_pages ? 'opacity-50 cursor-not-allowed' : ''}"
+                                 ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}>
+                            <span class="sr-only">Next</span><i class="fas fa-chevron-right"></i>
+                         </button>`;
+                html += `</nav></div></div>`;
+                paginationControls.innerHTML = html;
+            }
+            
+            function collectFilters() {
+                const filters = {};
+                filters.search = document.getElementById('search').value;
+                filters.type = document.getElementById('property-type').value;
+                filters.status = document.getElementById('status').value;
+                // Price range: handle_get_properties expects price_min and price_max
+                // For simplicity, this example uses the single range slider value as price_max. 
+                // A real implementation might use two sliders or parse a range.
+                // const priceRangeVal = document.getElementById('price-range').value;
+                // if(priceRangeVal > 0) filters.price_max = priceRangeVal; // Example: only filter by max
+                // For now, price filter is not fully implemented in UI to collect min/max separately.
+                // Let's assume price_max from the slider for now if it's not the default max.
+                const priceRangeInput = document.getElementById('price-range');
+                if (priceRangeInput.value !== priceRangeInput.max) { // Only if not max (meaning user interacted)
+                    filters.price_max = priceRangeInput.value;
+                } // min_price is not collected from this UI.
+
+                filters.category = document.getElementById('category').value;
+                
+                const sortBySelect = document.getElementById('sort-by').value;
+                // map UI sort values to backend sort_by and sort_order
+                switch(sortBySelect) {
+                    case 'latest': filters.sort_by = 'p.created_at'; filters.sort_order = 'DESC'; break;
+                    case 'name-asc': filters.sort_by = 'p.name'; filters.sort_order = 'ASC'; break;
+                    case 'name-desc': filters.sort_by = 'p.name'; filters.sort_order = 'DESC'; break;
+                    case 'price-asc': filters.sort_by = 'p.base_price'; filters.sort_order = 'ASC'; break;
+                    case 'price-desc': filters.sort_by = 'p.base_price'; filters.sort_order = 'DESC'; break;
+                    // case 'rating-desc': filters.sort_by = 'p.rating'; filters.sort_order = 'DESC'; break; // If rating exists
+                    default: filters.sort_by = 'p.created_at'; filters.sort_order = 'DESC';
+                }
+                return filters;
+            }
+
+            // Event Listeners for filters
+            document.querySelectorAll('.filter-input, #search, #property-type, #status, #price-range, #category, #sort-by, #amenities-filter-container input[type="checkbox"]')
+                .forEach(input => {
+                input.addEventListener('change', () => fetchProperties(1, collectFilters()));
+            });
+            document.getElementById('apply-filters')?.addEventListener('click', () => fetchProperties(1, collectFilters())); // If apply button is specifically used
+
+            document.getElementById('reset-filters').addEventListener('click', function() {
+                document.getElementById('search').value = '';
+                document.getElementById('property-type').value = '';
+                document.getElementById('status').value = '';
+                const priceRangeInput = document.getElementById('price-range');
+                priceRangeInput.value = priceRangeInput.max; // Reset to max or a default
+                document.getElementById('price-display').textContent = '₹' + parseInt(priceRangeInput.max).toLocaleString() + '+';
+                document.getElementById('category').value = '';
+                document.getElementById('sort-by').value = 'latest';
+                document.querySelectorAll('#amenities-filter-container input[type="checkbox"]').forEach(cb => cb.checked = false);
+                fetchProperties(1, {}); // Fetch with empty filters
             });
             
-            // Select all properties
-            const selectAll = document.getElementById('select-all');
-            const propertyCheckboxes = document.querySelectorAll('.property-select');
-            const selectedCount = document.getElementById('selected-count');
-            const bulkButtons = document.querySelectorAll('#bulk-activate, #bulk-deactivate, #bulk-delete, #bulk-export');
+            if(priceRange) {
+                priceRange.addEventListener('input', function() {
+                    if (parseInt(this.value) === parseInt(this.max)) {
+                         priceDisplay.textContent = '₹' + parseInt(this.value).toLocaleString() + '+';
+                    } else {
+                         priceDisplay.textContent = '₹' + parseInt(this.value).toLocaleString();
+                    }
+                });
+            }
             
-            selectAll.addEventListener('change', function() {
-                propertyCheckboxes.forEach(checkbox => {
+            // Checkbox handling and bulk actions (initial setup)
+            function updateSelectedCount() {
+                const selectedCheckboxes = document.querySelectorAll('.property-select:checked');
+                const count = selectedCheckboxes.length;
+                selectedCountDisplay.textContent = `(${count} selected)`;
+
+                const enableBulk = count > 0;
+                [bulkActivateBtn, bulkDeactivateBtn, bulkDeleteBtn, bulkExportBtn].forEach(btn => {
+                    if(btn) {
+                        btn.disabled = !enableBulk;
+                        if (enableBulk) btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        else btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                });
+                 if (document.getElementById('bulk-delete-count')) {
+                    document.getElementById('bulk-delete-count').textContent = count;
+                }
+            }
+            
+            selectAllCheckbox?.addEventListener('change', function() {
+                document.querySelectorAll('.property-select').forEach(checkbox => {
                     checkbox.checked = this.checked;
                 });
-                
                 updateSelectedCount();
             });
-            
-            propertyCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const allChecked = Array.from(propertyCheckboxes).every(cb => cb.checked);
-                    const anyChecked = Array.from(propertyCheckboxes).some(cb => cb.checked);
-                    
-                    selectAll.checked = allChecked;
-                    selectAll.indeterminate = anyChecked && !allChecked;
-                    
-                    updateSelectedCount();
+
+            function attachRowEventListeners() {
+                document.querySelectorAll('.property-select').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        const allChecked = Array.from(document.querySelectorAll('.property-select')).every(cb => cb.checked);
+                        const anyChecked = Array.from(document.querySelectorAll('.property-select')).some(cb => cb.checked);
+                        if(selectAllCheckbox) {
+                           selectAllCheckbox.checked = allChecked;
+                           selectAllCheckbox.indeterminate = anyChecked && !allChecked;
+                        }
+                        updateSelectedCount();
+                    });
                 });
-            });
-            
-            function updateSelectedCount() {
-                const count = Array.from(propertyCheckboxes).filter(cb => cb.checked).length;
-                selectedCount.textContent = `(${count} selected)`;
-                
-                if (count > 0) {
-                    bulkButtons.forEach(button => {
-                        button.disabled = false;
-                        button.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                document.querySelectorAll('.delete-property-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        propertyIdToDelete = this.dataset.id;
+                        deleteModal.classList.remove('hidden');
                     });
-                } else {
-                    bulkButtons.forEach(button => {
-                        button.disabled = true;
-                        button.classList.add('opacity-50', 'cursor-not-allowed');
-                    });
-                }
-                
-                document.getElementById('bulk-delete-count').textContent = count;
+                });
             }
+            
+            // Single Delete Action
+            confirmDeleteBtn?.addEventListener('click', async function() {
+                if (!propertyIdToDelete) return;
+                try {
+                    const formData = new FormData();
+                    formData.append('property_id', propertyIdToDelete);
+                    const response = await fetch('handle_delete_property.php', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.success) {
+                        displayAjaxMessage('success', data.message || 'Property deleted successfully.');
+                        fetchProperties(currentPage, currentFilters); // Refresh
+                    } else {
+                        displayAjaxMessage('error', data.message || 'Failed to delete property.');
+                    }
+                } catch (error) {
+                    displayAjaxMessage('error', 'Error deleting property: ' + error.message);
+                } finally {
+                    deleteModal.classList.add('hidden');
+                    propertyIdToDelete = null;
+                }
+            });
+            cancelDeleteBtn?.addEventListener('click', () => deleteModal.classList.add('hidden'));
+
+            // Bulk Actions
+            async function handleBulkAction(action) {
+                const selectedIds = Array.from(document.querySelectorAll('.property-select:checked')).map(cb => cb.dataset.id);
+                if (selectedIds.length === 0) {
+                    displayAjaxMessage('error', 'No properties selected.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('action', action);
+                selectedIds.forEach(id => formData.append('property_ids[]', id));
+
+                try {
+                    const response = await fetch('handle_bulk_actions.php', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.success) {
+                        displayAjaxMessage('success', data.message || `Bulk ${action} successful.`);
+                        fetchProperties(currentPage, currentFilters); // Refresh
+                    } else {
+                        displayAjaxMessage('error', data.message || `Failed to perform bulk ${action}.`);
+                    }
+                } catch (error) {
+                    displayAjaxMessage('error', `Error performing bulk ${action}: ` + error.message);
+                } finally {
+                    if (action === 'delete') bulkDeleteModal.classList.add('hidden');
+                    if(selectAllCheckbox) selectAllCheckbox.checked = false; // Uncheck select all
+                    updateSelectedCount();
+                }
+            }
+
+            bulkActivateBtn?.addEventListener('click', () => handleBulkAction('activate'));
+            bulkDeactivateBtn?.addEventListener('click', () => handleBulkAction('deactivate'));
+            bulkDeleteBtn?.addEventListener('click', () => {
+                if (Array.from(document.querySelectorAll('.property-select:checked')).length > 0) {
+                    bulkDeleteModal.classList.remove('hidden');
+                } else {
+                    displayAjaxMessage('error', 'No properties selected for deletion.');
+                }
+            });
+            confirmBulkDeleteBtn?.addEventListener('click', () => handleBulkAction('delete'));
+            cancelBulkDeleteBtn?.addEventListener('click', () => bulkDeleteModal.classList.add('hidden'));
+            // bulkExportBtn?.addEventListener('click', () => handleBulkAction('export')); // Export needs specific backend
+
+            // Initial fetch
+            fetchProperties();
+
+        });
+    </script>
+</body>
+</html>
             
             // Reset filters
             document.getElementById('reset-filters').addEventListener('click', function() {
