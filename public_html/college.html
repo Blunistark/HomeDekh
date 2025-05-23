@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .college-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .college-card {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .college-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .college-image {
+            height: 180px;
+            background-color: #eaeaea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .college-image img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .placeholder-icon {
+            font-size: 40px;
+            color: #ccc;
+        }
+        
+        .like-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            z-index: 5;
+        }
+        
+        .like-btn i {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .like-btn.active i {
+            color: #ff3e6c;
+        }
+        
+        .tags-container {
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tag {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .tag.blue {
+            background-color: #1a73e8;
+        }
+        
+        .tag.green {
+            background-color: #34a853;
+        }
+        
+        .tag.purple {
+            background-color: #7e57c2;
+        }
+        
+        .tag.orange {
+            background-color: #ff7043;
+        }
+        
+        .tag.red {
+            background-color: #e53935;
+        }
+        
+        .college-info {
+            padding: 15px;
+        }
+        
+        .college-location {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .college-location i {
+            margin-right: 5px;
+            color: #1a73e8;
+        }
+        
+        .college-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .college-distance {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .stars {
+            color: #ffc107;
+            margin-right: 5px;
+        }
+        
+        .review-count {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .facilities {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .price {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            color: #333;
+        }
+        
+        .view-details {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .view-details:hover {
+            background-color: #1557b0;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 4px;
+            padding: 8px 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .search-box i {
+            color: #666;
+            margin-right: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Find Top Colleges</h1>
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search by college name or location">
+                </div>
+                <button class="filter-btn">
+                    <i class="fas fa-filter"></i>
+                    Filters
+                </button>
+            </div>
+        </div>
+        
+        <div class="college-grid">
+            <!-- College 1 -->
+            <div class="college-card" onclick="navigateToCollege(1)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 1)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Top Rated</span>
+                    <span class="tag green">Scholarship</span>
+                    <span class="tag purple">Hostel</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near Stanford University</span>
+                    </div>
+                    <h3 class="college-name">College 1</h3>
+                    <p class="college-distance">0.5 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.8</div>
+                        <div class="review-count">(124)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Engineering, Medical, Arts</span>
+                    </div>
+                    <p class="price">Starting from ₹12,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 1)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 2 -->
+            <div class="college-card" onclick="navigateToCollege(2)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 2)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Co-ed</span>
+                    <span class="tag orange">Food Included</span>
+                    <span class="tag green">Gym</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near MIT</span>
+                    </div>
+                    <h3 class="college-name">College 2</h3>
+                    <p class="college-distance">0.8 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.6</div>
+                        <div class="review-count">(98)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Engineering, Science, Business</span>
+                    </div>
+                    <p class="price">Starting from ₹15,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 2)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 3 -->
+            <div class="college-card" onclick="navigateToCollege(3)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 3)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Boys Only</span>
+                    <span class="tag purple">Laundry</span>
+                    <span class="tag green">Study Room</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near Harvard University</span>
+                    </div>
+                    <h3 class="college-name">College 3</h3>
+                    <p class="college-distance">1.2 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.5</div>
+                        <div class="review-count">(156)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Law, Business, Medical</span>
+                    </div>
+                    <p class="price">Starting from ₹9,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 3)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 4 -->
+            <div class="college-card" onclick="navigateToCollege(4)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 4)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Co-ed</span>
+                    <span class="tag red">AC</span>
+                    <span class="tag orange">WiFi</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near Columbia University</span>
+                    </div>
+                    <h3 class="college-name">College 4</h3>
+                    <p class="college-distance">0.3 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.9</div>
+                        <div class="review-count">(87)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Arts, Science, Engineering</span>
+                    </div>
+                    <p class="price">Starting from ₹18,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 4)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 5 -->
+            <div class="college-card" onclick="navigateToCollege(5)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 5)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Girls Only</span>
+                    <span class="tag orange">Food Included</span>
+                    <span class="tag green">WiFi</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near Yale University</span>
+                    </div>
+                    <h3 class="college-name">College 5</h3>
+                    <p class="college-distance">0.7 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.7</div>
+                        <div class="review-count">(112)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Law, Arts, Humanities</span>
+                    </div>
+                    <p class="price">Starting from ₹14,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 5)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 6 -->
+            <div class="college-card" onclick="navigateToCollege(6)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 6)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Boys Only</span>
+                    <span class="tag red">AC</span>
+                    <span class="tag purple">Gym</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near UC Berkeley</span>
+                    </div>
+                    <h3 class="college-name">College 6</h3>
+                    <p class="college-distance">0.4 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.8</div>
+                        <div class="review-count">(94)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Engineering, Computer Science</span>
+                    </div>
+                    <p class="price">Starting from ₹16,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 6)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 7 -->
+            <div class="college-card" onclick="navigateToCollege(7)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 7)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Co-ed</span>
+                    <span class="tag red">Premium</span>
+                    <span class="tag purple">All Amenities</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near Princeton University</span>
+                    </div>
+                    <h3 class="college-name">College 7</h3>
+                    <p class="college-distance">0.6 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.9</div>
+                        <div class="review-count">(78)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Science, Research, Arts</span>
+                    </div>
+                    <p class="price">Starting from ₹20,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 7)">View Details</button>
+                </div>
+            </div>
+
+            <!-- College 8 -->
+            <div class="college-card" onclick="navigateToCollege(8)">
+                <div class="college-image">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <button class="like-btn" onclick="toggleLike(event, 8)">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="tags-container">
+                    <span class="tag blue">Girls Only</span>
+                    <span class="tag green">WiFi</span>
+                    <span class="tag purple">Study Room</span>
+                </div>
+                <div class="college-info">
+                    <div class="college-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Near NYU</span>
+                    </div>
+                    <h3 class="college-name">College 8</h3>
+                    <p class="college-distance">0.9 km from city center</p>
+                    <div class="rating">
+                        <div class="stars">★ 4.6</div>
+                        <div class="review-count">(103)</div>
+                    </div>
+                    <div class="facilities">
+                        <span>Business, Arts, Film</span>
+                    </div>
+                    <p class="price">Starting from ₹17,000/month</p>
+                    <button class="view-details" onclick="viewDetails(event, 8)">View Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle like button
+        function toggleLike(event, collegeId) {
+            event.stopPropagation(); // Prevent card click event
+            const likeBtn = event.currentTarget;
+            const heartIcon = likeBtn.querySelector('i');
+            
+            if (heartIcon.classList.contains('far')) {
+                heartIcon.classList.remove('far');
+                heartIcon.classList.add('fas');
+                likeBtn.classList.add('active');
+                console.log(`College ${collegeId} liked`);
+            } else {
+                heartIcon.classList.remove('fas');
+                heartIcon.classList.add('far');
+                likeBtn.classList.remove('active');
+                console.log(`College ${collegeId} unliked`);
+            }
+        }
+        
+        // View details button
+        function viewDetails(event, collegeId) {
+            event.stopPropagation(); // Prevent card click event
+            console.log(`Viewing details for College ${collegeId}`);
+            window.location.href = `college-details.html?id=${collegeId}`;
+        }
+        
+        // Navigate to college PGs page
+        function navigateToCollege(collegeId) {
+            console.log(`Navigating to PGs near College ${collegeId}`);
+            window.location.href = `college-pgs.html?id=${collegeId}`;
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('College listing page loaded');
+            
+            // Add search functionality
+            const searchInput = document.querySelector('.search-box input');
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const collegeCards = document.querySelectorAll('.college-card');
+                
+                collegeCards.forEach(card => {
+                    const collegeName = card.querySelector('.college-name').textContent.toLowerCase();
+                    const collegeLocation = card.querySelector('.college-location span').textContent.toLowerCase();
+                    
+                    if (collegeName.includes(searchTerm) || collegeLocation.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Filter button click
+            const filterBtn = document.querySelector('.filter-btn');
+            filterBtn.addEventListener('click', function() {
+                alert('Filter functionality will be implemented here');
+            });
+        });
+    </script>
+</body>
+</html>
