@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html><html lang="en" dir="ltr"><head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -82,18 +83,30 @@
         <h2>Create Account</h2>
       </div>
       <div class="zubuz-account-wrap">
-        <form action="#">
+        <?php
+          // Display error messages if they exist
+          if (isset($_SESSION['error_message'])) {
+              echo '<div style="color: red; margin-bottom: 15px; text-align: center;">' . $_SESSION['error_message'] . '</div>';
+              unset($_SESSION['error_message']); // Clear the message after displaying
+          }
+          // Display success messages if they exist (though less common on sign-up page itself)
+          if (isset($_SESSION['success_message'])) {
+              echo '<div style="color: green; margin-bottom: 15px; text-align: center;">' . $_SESSION['success_message'] . '</div>';
+              unset($_SESSION['success_message']); // Clear the message after displaying
+          }
+        ?>
+        <form action="auth/handle_signup.php" method="POST">
           <div class="zubuz-account-field">
             <label>Enter your full name</label>
-            <input type="text" placeholder="Adam Smith">
+            <input type="text" name="name" placeholder="Adam Smith" required>
           </div>
           <div class="zubuz-account-field">
             <label>Enter email address</label>
-            <input type="email" placeholder="example@gmail.com">
+            <input type="email" name="email" placeholder="example@gmail.com" required>
           </div>
           <div class="zubuz-account-field">
             <label>Enter Password</label>
-            <input type="password" placeholder="Enter Password">
+            <input type="password" name="password" placeholder="Enter Password" required>
           </div>
           <div class="zubuz-account-checkbox">
             <input type="checkbox" id="check">
