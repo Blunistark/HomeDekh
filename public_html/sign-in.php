@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html><html lang="en" dir="ltr"><head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -81,14 +82,26 @@
         <h2>Welcome Back</h2>
       </div>
       <div class="zubuz-account-wrap">
-        <form action="#">
+        <?php
+          // Display error messages if they exist
+          if (isset($_SESSION['error_message'])) {
+              echo '<div style="color: red; margin-bottom: 15px; text-align: center;">' . $_SESSION['error_message'] . '</div>';
+              unset($_SESSION['error_message']); // Clear the message after displaying
+          }
+          // Display success messages (e.g., after successful registration)
+          if (isset($_SESSION['success_message'])) {
+              echo '<div style="color: green; margin-bottom: 15px; text-align: center;">' . $_SESSION['success_message'] . '</div>';
+              unset($_SESSION['success_message']); // Clear the message after displaying
+          }
+        ?>
+        <form action="auth/handle_login.php" method="POST">
           <div class="zubuz-account-field">
             <label>Enter email address</label>
-            <input type="email" placeholder="example@gmail.com">
+            <input type="email" name="email" placeholder="example@gmail.com" required>
           </div>
           <div class="zubuz-account-field">
             <label>Enter Password</label>
-            <input type="password" placeholder="Enter Password">
+            <input type="password" name="password" placeholder="Enter Password" required>
           </div>
           <div class="zubuz-account-checkbox-wrap">
             <div class="zubuz-account-checkbox">
