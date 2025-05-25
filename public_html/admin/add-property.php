@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Property | HomeDhek Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -1149,20 +1148,38 @@
             
             // Function to validate form
             function validateForm() {
-                // Basic validation example
-                const propertyName = document.getElementById('property-name').value;
-                const propertyType = document.getElementById('property-type').value;
-                const propertyCategory = document.getElementById('property-category').value;
-                const propertyPrice = document.getElementById('property-price').value;
-                
-                if (!propertyName || !propertyType || !propertyCategory || !propertyPrice) {
-                    alert('Please fill in all required fields in the Basic Info tab.');
-                    switchToTab('basic-info');
-                    return false;
+                const tabContents = document.querySelectorAll('.tab-content');
+
+                for (const contentPanel of tabContents) {
+                    const requiredFields = contentPanel.querySelectorAll('input[required], textarea[required], select[required]');
+                    const panelId = contentPanel.id; // e.g., "basic-info-tab"
+                    if (!panelId.endsWith('-tab')) continue; // Skip if not a standard tab panel
+
+                    const dataTabValue = panelId.substring(0, panelId.length - 4); // e.g., "basic-info"
+                    const tabButton = document.querySelector(`.tab-btn[data-tab="${dataTabValue}"]`);
+                    const tabName = tabButton ? tabButton.innerText.trim() : dataTabValue;
+
+                    for (const field of requiredFields) {
+                        const value = field.value.trim();
+                        if (!value) {
+                            switchToTab(dataTabValue);
+                            let fieldName = field.id || field.name;
+                            // Try to get label text
+                            if (field.labels && field.labels.length > 0) {
+                                fieldName = field.labels[0].innerText.replace('*', '').trim();
+                            } else {
+                                // Fallback for more complex structures if label is not directly associated
+                                const label = document.querySelector(`label[for="${field.id}"]`);
+                                if (label) {
+                                    fieldName = label.innerText.replace('*', '').trim();
+                                }
+                            }
+                            alert(`Please fill in the '${fieldName}' field in the '${tabName}' tab.`);
+                            field.focus();
+                            return false;
+                        }
+                    }
                 }
-                
-                // Additional validation could be added for other tabs
-                
                 return true;
             }
             
@@ -1172,5 +1189,6 @@
             addNearbyPlace();
         });
     </script>
+    <script src="https://cdn.tailwindcss.com" defer></script>
 </body>
 </html>
