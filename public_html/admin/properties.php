@@ -222,9 +222,9 @@
                             <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                             <select id="status" class="w-full border rounded-lg px-3 py-2">
                                 <option value="">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="pending">Pending</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="active">Active</option> <!-- Mapped to 'available' in backend -->
+                                <option value="pending">Pending</option> <!-- Might need specific backend handling if not 'unavailable' -->
+                                <option value="inactive">Inactive</option> <!-- Mapped to 'unavailable' in backend -->
                             </select>
                         </div>
                     </div>
@@ -233,13 +233,12 @@
                     <div id="advanced-filters" class="hidden border-t pt-4 mt-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label for="price-range" class="block text-sm font-medium text-gray-700 mb-1">Price Range</label>
+                                <label for="price-range" class="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
                                 <div class="px-2">
-                                    <input type="range" id="price-range" min="0" max="50000" value="20000" step="500" class="price-slider mb-2">
+                                    <input type="range" id="price-range" min="0" max="50000" value="50000" step="1000" class="price-slider mb-2">
                                     <div class="flex justify-between">
                                         <span class="text-xs text-gray-500">₹0</span>
-                                        <span class="text-xs text-gray-500" id="price-display">₹20,000</span>
-                                        <span class="text-xs text-gray-500">₹50,000+</span>
+                                        <span class="text-xs text-gray-500" id="price-display">₹50,000+</span>
                                     </div>
                                 </div>
                             </div>
@@ -272,73 +271,73 @@
                             <div id="amenities-filter-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                                 <!-- Amenity IDs are from database.sql pre-population -->
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-wifi" name="amenities[]" value="1" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-wifi" name="amenities[]" value="1" class="mr-2">
                                     <label for="amenity-wifi" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-wifi text-gray-400 mr-1"></i> WiFi
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-food" name="amenities[]" value="2" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-food" name="amenities[]" value="2" class="mr-2">
                                     <label for="amenity-food" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-utensils text-gray-400 mr-1"></i> Food
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-tv" name="amenities[]" value="3" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-tv" name="amenities[]" value="3" class="mr-2">
                                     <label for="amenity-tv" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-tv text-gray-400 mr-1"></i> TV
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-bathroom" name="amenities[]" value="4" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-bathroom" name="amenities[]" value="4" class="mr-2">
                                     <label for="amenity-bathroom" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-bath text-gray-400 mr-1"></i> Attached Bathroom
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-refrigerator" name="amenities[]" value="5" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-refrigerator" name="amenities[]" value="5" class="mr-2">
                                     <label for="amenity-refrigerator" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-snowflake text-gray-400 mr-1"></i> Refrigerator
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-ac" name="amenities[]" value="6" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-ac" name="amenities[]" value="6" class="mr-2">
                                     <label for="amenity-ac" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-wind text-gray-400 mr-1"></i> AC
                                     </label>
                                 </div>
                                  <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-gym" name="amenities[]" value="7" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-gym" name="amenities[]" value="7" class="mr-2">
                                     <label for="amenity-gym" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-dumbbell text-gray-400 mr-1"></i> Gym
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-laundry" name="amenities[]" value="8" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-laundry" name="amenities[]" value="8" class="mr-2">
                                     <label for="amenity-laundry" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-tshirt text-gray-400 mr-1"></i> Laundry
                                     </label>
                                 </div>
                                  <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-study" name="amenities[]" value="9" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-study" name="amenities[]" value="9" class="mr-2">
                                     <label for="amenity-study" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-book text-gray-400 mr-1"></i> Study Room
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-parking" name="amenities[]" value="10" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-parking" name="amenities[]" value="10" class="mr-2">
                                     <label for="amenity-parking" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-parking text-gray-400 mr-1"></i> Parking
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-security" name="amenities[]" value="11" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-security" name="amenities[]" value="11" class="mr-2">
                                     <label for="amenity-security" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-shield-alt text-gray-400 mr-1"></i> 24/7 Security
                                     </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="amenity-power" name="amenities[]" value="12" class="mr-2 filter-input">
+                                    <input type="checkbox" id="amenity-power" name="amenities[]" value="12" class="mr-2">
                                     <label for="amenity-power" class="text-sm text-gray-600 flex items-center">
                                         <i class="fas fa-bolt text-gray-400 mr-1"></i> Power Backup
                                     </label>
@@ -361,7 +360,7 @@
                 <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                         <div class="flex items-center mb-4 sm:mb-0">
-                            <input type="checkbox" id="select-all" class="mr-2 filter-input">
+                            <input type="checkbox" id="select-all" class="mr-2"> <!-- Removed filter-input class -->
                             <label for="select-all" class="text-sm font-medium text-gray-700">Select All</label>
                             <span class="ml-2 text-sm text-gray-500" id="selected-count-display">(0 selected)</span>
                         </div>
@@ -421,331 +420,6 @@
                             </thead>
                             <tbody id="propertiesTableBody" class="bg-white divide-y divide-gray-200">
                                 <!-- Property rows will be injected here by JavaScript -->
-                                <!-- Example of a single row structure (for reference, will be removed) -->
-                                <!--
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="property-select" data-id="1">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                                <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Sunshine PG for Girls</div>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                                    <span class="text-xs text-gray-500">4.8</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">PG</div>
-                                        <div class="text-xs text-blue-600">Girls Only</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Near Stanford University</div>
-                                        <div class="text-xs text-gray-500">0.5 km</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">₹12,000/month</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        May 15, 2025
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <a href="edit-property.php?id=1" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="view-property.php?id=1" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="text-red-600 hover:text-red-900 delete-property" data-id="1" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Property 2 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="property-select" data-id="2">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                                <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Campus View Residency</div>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                                    <span class="text-xs text-gray-500">4.6</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Hostel</div>
-                                        <div class="text-xs text-purple-600">Co-ed</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Near MIT</div>
-                                        <div class="text-xs text-gray-500">0.8 km</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">₹15,000/month</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        May 14, 2025
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <a href="edit-property.php?id=2" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="view-property.php?id=2" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="text-red-600 hover:text-red-900 delete-property" data-id="2" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Property 3 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="property-select" data-id="3">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Green Valley Boys Hostel</div>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                                    <span class="text-xs text-gray-500">4.5</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Hostel</div>
-                                        <div class="text-xs text-green-600">Boys Only</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Near Harvard University</div>
-                                        <div class="text-xs text-gray-500">1.2 km</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">₹9,000/month</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        May 13, 2025
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <a href="edit-property.php?id=3" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="view-property.php?id=3" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="text-red-600 hover:text-red-900 delete-property" data-id="3" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Property 4 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="property-select" data-id="4">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                                <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Bliss Ladies Hostel</div>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                                    <span class="text-xs text-gray-500">4.5</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">PG</div>
-                                        <div class="text-xs text-blue-600">Girls Only</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Near Stanford University</div>
-                                        <div class="text-xs text-gray-500">1.2 km</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">₹6,800/month</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        May 12, 2025
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <a href="edit-property.php?id=4" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="view-property.php?id=4" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="text-red-600 hover:text-red-900 delete-property" data-id="4" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Property 5 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="property-select" data-id="5">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                                <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Tranquil Women's Hostel</div>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                                    <span class="text-xs text-gray-500">4.9</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Hostel</div>
-                                        <div class="text-xs text-blue-600">Girls Only</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Near Stanford University</div>
-                                        <div class="text-xs text-gray-500">1.5 km</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">₹10,500/month</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            Inactive
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        May 10, 2025
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <a href="edit-property.php?id=5" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="view-property.php?id=5" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="text-red-600 hover:text-red-900 delete-property" data-id="5" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Property 6 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="property-select" data-id="6">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                                <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Harmony Ladies PG</div>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                                    <span class="text-xs text-gray-500">4.3</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">PG</div>
-                                        <div class="text-xs text-blue-600">Girls Only</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Near Stanford University</div>
-                                        <div class="text-xs text-gray-500">0.9 km</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">₹9,000/month</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        May 9, 2025
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <a href="edit-property.php?id=6" class="text-[#1a4977] hover:text-[#0d2f4e]" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="view-property.php?id=6" class="text-gray-600 hover:text-gray-900" title="View" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="text-red-600 hover:text-red-900 delete-property" data-id="6" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                                </tr>
-                                -->
                             </tbody>
                         </table>
                     </div>
@@ -818,21 +492,28 @@
                 }
             });
             
-            // Price range slider
+            // Price range slider (initial display update, event listener for change is set later)
             const priceRange = document.getElementById('price-range');
             const priceDisplay = document.getElementById('price-display');
+             if(priceRange && priceDisplay){ // Ensure elements exist
+                const initialPrice = parseInt(priceRange.value);
+                if (initialPrice === parseInt(priceRange.max)) {
+                    priceDisplay.textContent = '₹' + initialPrice.toLocaleString() + '+';
+                } else {
+                    priceDisplay.textContent = '₹' + initialPrice.toLocaleString();
+                }
+            }
+            
             const propertiesTableBody = document.getElementById('propertiesTableBody');
             const paginationControls = document.getElementById('paginationControls');
             const selectedCountDisplay = document.getElementById('selected-count-display');
             const selectAllCheckbox = document.getElementById('select-all');
             
-            // Bulk action buttons
             const bulkActivateBtn = document.getElementById('bulk-activate');
             const bulkDeactivateBtn = document.getElementById('bulk-deactivate');
             const bulkDeleteBtn = document.getElementById('bulk-delete');
-            const bulkExportBtn = document.getElementById('bulk-export'); // Export not implemented in backend yet
+            const bulkExportBtn = document.getElementById('bulk-export');
 
-            // Modals
             const deleteModal = document.getElementById('delete-modal');
             const cancelDeleteBtn = document.getElementById('cancel-delete');
             const confirmDeleteBtn = document.getElementById('confirm-delete');
@@ -841,8 +522,8 @@
             const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete');
             let propertyIdToDelete = null;
 
-            let currentPage = 1;
-            let currentFilters = {};
+            let currentPage = 1; 
+            let currentFilters = {}; 
 
             function displayAjaxMessage(type, message) {
                 const successDiv = document.getElementById('ajax-success-message');
@@ -860,74 +541,91 @@
                     errorText.textContent = message;
                     errorDiv.classList.remove('hidden');
                 }
+                 setTimeout(() => { 
+                    successDiv.classList.add('hidden');
+                    errorDiv.classList.add('hidden');
+                }, 5000);
             }
             
-            async function fetchProperties(page = 1, filters = {}) {
-                currentPage = page;
-                currentFilters = filters;
-                const params = new URLSearchParams({ page, ...filters });
+            // This is the core function to fetch and render data.
+            // It will be wrapped later to include URL updates.
+            async function _originalFetchProperties(page = 1, filters = {}) {
+                const params = new URLSearchParams({ page });
                 
-                // Collect amenities
-                const amenityCheckboxes = document.querySelectorAll('#amenities-filter-container input[name="amenities[]"]:checked');
-                amenityCheckboxes.forEach(cb => params.append('amenities[]', cb.value));
-
+                for (const key in filters) {
+                    if (filters[key] !== undefined && filters[key] !== '') {
+                        if (key === 'amenities' && Array.isArray(filters[key])) {
+                            filters[key].forEach(value => params.append('amenities[]', value));
+                        } else {
+                             params.set(key, filters[key]);
+                        }
+                    }
+                }
+                
                 try {
                     const response = await fetch(`handle_get_properties.php?${params.toString()}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
+                    console.log('Fetched properties data:', data); 
 
                     renderTable(data.properties);
                     renderPagination(data.pagination);
-                    updateSelectedCount(); // Reset selection states on new data load
+                    updateSelectedCount(); 
                 } catch (error) {
                     console.error('Error fetching properties:', error);
-                    propertiesTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Failed to load properties. ' + error.message + '</td></tr>';
+                    propertiesTableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Failed to load properties: ${error.message}</td></tr>`;
                     displayAjaxMessage('error', 'Failed to load properties: ' + error.message);
                 }
             }
 
             function renderTable(properties) {
-                propertiesTableBody.innerHTML = ''; // Clear existing rows
-                if (properties.length === 0) {
+                propertiesTableBody.innerHTML = ''; 
+                if (!properties || properties.length === 0) {
                     propertiesTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No properties found.</td></tr>';
                     return;
                 }
 
                 properties.forEach(property => {
                     const row = document.createElement('tr');
-                    // Default image or actual image
-                    const imageUrl = property.main_image_path || 'https://via.placeholder.com/80x80?text=No+Image';
+                    const imageUrl = property.main_image_path ? `../${property.main_image_path}` : 'https://via.placeholder.com/80x80?text=No+Image';
                     
-                    // Status badge
                     let statusBadge;
-                    switch (property.status) { // Assuming 'status' from DB is 'available', 'unavailable', 'booked'
-                        case 'available':
+                    let uiStatus = property.status; 
+                    
+                    // Mapping backend status to UI display terms if needed
+                    if (property.status === 'available') uiStatus = 'Active';
+                    else if (property.status === 'unavailable') uiStatus = 'Inactive';
+                    // Add more mappings if your backend uses other terms for 'Pending', etc.
+                    // Or if 'status' from backend already matches UI terms like 'Active', 'Pending', 'Inactive'.
+
+                    switch (uiStatus) { 
+                        case 'Active':
                             statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>';
                             break;
-                        case 'unavailable':
+                        case 'Inactive':
                             statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Inactive</span>';
                             break;
-                        case 'booked':
-                             statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Booked</span>';
+                         case 'Pending': 
+                            statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>';
                             break;
-                        default: // Should map to Draft/Pending from form if those are stored differently
-                            statusBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${property.status || 'N/A'}</span>`;
+                        default: 
+                            statusBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${uiStatus || 'N/A'}</span>`;
                     }
 
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <input type="checkbox" class="property-select filter-input" data-id="${property.id}">
+                            <input type="checkbox" class="property-select" data-id="${property.id}">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
-                                    <img src="../${imageUrl}" alt="${property.name}" class="h-full w-full object-cover">
+                                    <img src="${imageUrl}" alt="${property.name}" class="h-full w-full object-cover">
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">${property.name}</div>
-                                    <!-- Rating can be added here if available in property object -->
+                                    ${property.property_rating ? `<div class="flex items-center"><i class="fas fa-star text-yellow-400 text-xs mr-1"></i><span class="text-xs text-gray-500">${property.property_rating}</span></div>` : ''}
                                 </div>
                             </div>
                         </td>
@@ -936,7 +634,7 @@
                             <div class="text-xs text-blue-600">${property.property_category || 'N/A'}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">${property.address || 'N/A'}</div>
+                            <div class="text-sm text-gray-900 truncate" style="max-width: 150px;" title="${property.address || ''}">${property.address || 'N/A'}</div>
                             <div class="text-xs text-gray-500">${property.landmark || ''}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -964,14 +662,17 @@
                     `;
                     propertiesTableBody.appendChild(row);
                 });
-                // Re-attach event listeners for new delete buttons and checkboxes
                 attachRowEventListeners();
             }
 
             function renderPagination(pagination) {
-                paginationControls.innerHTML = ''; // Clear existing pagination
-                if (!pagination || pagination.total_pages <= 1) {
-                    paginationControls.innerHTML = '<p class="text-sm text-gray-700">Showing <span class="font-medium">' + pagination.total_records + '</span> results</p>';
+                paginationControls.innerHTML = ''; 
+                if (!pagination || pagination.total_pages <= 0) { 
+                     paginationControls.innerHTML = `<p class="text-sm text-gray-700">Showing <span class="font-medium">${pagination.total_records || 0}</span> results</p>`;
+                    return;
+                }
+                 if (pagination.total_pages === 1 && pagination.total_records > 0) { 
+                    paginationControls.innerHTML = `<p class="text-sm text-gray-700">Showing <span class="font-medium">${pagination.total_records}</span> results</p>`;
                     return;
                 }
 
@@ -986,24 +687,21 @@
                                 <div>
                                     <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">`;
                 
-                // Previous button
-                html += `<button onclick="fetchProperties(${pagination.current_page - 1}, currentFilters)" 
+                html += `<button onclick="fetchPropertiesWrapper(${pagination.current_page - 1})" 
                                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${pagination.current_page === 1 ? 'opacity-50 cursor-not-allowed' : ''}"
                                  ${pagination.current_page === 1 ? 'disabled' : ''}>
                             <span class="sr-only">Previous</span><i class="fas fa-chevron-left"></i>
                          </button>`;
 
-                // Page numbers
                 for (let i = 1; i <= pagination.total_pages; i++) {
                     if (i === pagination.current_page) {
                         html += `<button aria-current="page" class="z-10 bg-[#1a4977] border-[#1a4977] text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">${i}</button>`;
                     } else {
-                        html += `<button onclick="fetchProperties(${i}, currentFilters)" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">${i}</button>`;
+                        html += `<button onclick="fetchPropertiesWrapper(${i})" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">${i}</button>`;
                     }
                 }
 
-                // Next button
-                html += `<button onclick="fetchProperties(${pagination.current_page + 1}, currentFilters)"
+                html += `<button onclick="fetchPropertiesWrapper(${pagination.current_page + 1})"
                                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${pagination.current_page === pagination.total_pages ? 'opacity-50 cursor-not-allowed' : ''}"
                                  ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}>
                             <span class="sr-only">Next</span><i class="fas fa-chevron-right"></i>
@@ -1012,74 +710,215 @@
                 paginationControls.innerHTML = html;
             }
             
+            // --- Enhanced Filter Logic START ---
             function collectFilters() {
                 const filters = {};
-                filters.search = document.getElementById('search').value;
-                filters.type = document.getElementById('property-type').value;
-                filters.status = document.getElementById('status').value;
-                // Price range: handle_get_properties expects price_min and price_max
-                // For simplicity, this example uses the single range slider value as price_max. 
-                // A real implementation might use two sliders or parse a range.
-                // const priceRangeVal = document.getElementById('price-range').value;
-                // if(priceRangeVal > 0) filters.price_max = priceRangeVal; // Example: only filter by max
-                // For now, price filter is not fully implemented in UI to collect min/max separately.
-                // Let's assume price_max from the slider for now if it's not the default max.
-                const priceRangeInput = document.getElementById('price-range');
-                if (priceRangeInput.value !== priceRangeInput.max) { // Only if not max (meaning user interacted)
-                    filters.price_max = priceRangeInput.value;
-                } // min_price is not collected from this UI.
+                const searchVal = document.getElementById('search').value.trim();
+                if (searchVal) filters.search = searchVal;
 
-                filters.category = document.getElementById('category').value;
+                const typeVal = document.getElementById('property-type').value;
+                if (typeVal) filters.type = typeVal;
+
+                const statusVal = document.getElementById('status').value;
+                if (statusVal) filters.status = statusVal;
                 
-                const sortBySelect = document.getElementById('sort-by').value;
-                // map UI sort values to backend sort_by and sort_order
-                switch(sortBySelect) {
-                    case 'latest': filters.sort_by = 'p.created_at'; filters.sort_order = 'DESC'; break;
-                    case 'name-asc': filters.sort_by = 'p.name'; filters.sort_order = 'ASC'; break;
-                    case 'name-desc': filters.sort_by = 'p.name'; filters.sort_order = 'DESC'; break;
-                    case 'price-asc': filters.sort_by = 'p.base_price'; filters.sort_order = 'ASC'; break;
-                    case 'price-desc': filters.sort_by = 'p.base_price'; filters.sort_order = 'DESC'; break;
-                    // case 'rating-desc': filters.sort_by = 'p.rating'; filters.sort_order = 'DESC'; break; // If rating exists
-                    default: filters.sort_by = 'p.created_at'; filters.sort_order = 'DESC';
+                const priceRangeInput = document.getElementById('price-range');
+                if (priceRangeInput && priceRangeInput.value !== priceRangeInput.max) { 
+                    filters.price_max = priceRangeInput.value;
+                }
+
+                const categoryVal = document.getElementById('category').value;
+                if (categoryVal) filters.category = categoryVal;
+                
+                const sortByValue = document.getElementById('sort-by').value;
+                if (sortByValue) {
+                    const parts = sortByValue.split('-'); 
+                    let sort_by_col_ui = parts[0];
+                    
+                    if (sort_by_col_ui === 'latest') filters.sort_by = 'p.created_at';
+                    else if (sort_by_col_ui === 'name') filters.sort_by = 'p.name';
+                    else if (sort_by_col_ui === 'price') filters.sort_by = 'p.base_price';
+                    else if (sort_by_col_ui === 'rating') filters.sort_by = 'p.property_rating'; 
+                    else filters.sort_by = 'p.created_at'; 
+                    
+                    filters.sort_order = (parts[1] && ['ASC', 'DESC'].includes(parts[1].toUpperCase())) ? parts[1].toUpperCase() : 'DESC';
+                     if (sort_by_col_ui === 'latest') filters.sort_order = 'DESC'; 
+                } else { 
+                    filters.sort_by = 'p.created_at'; 
+                    filters.sort_order = 'DESC';
+                }
+
+                const selectedAmenities = [];
+                document.querySelectorAll('#amenities-filter-container input[name="amenities[]"]:checked').forEach(cb => {
+                    selectedAmenities.push(cb.value); 
+                });
+                if (selectedAmenities.length > 0) {
+                    filters.amenities = selectedAmenities; 
                 }
                 return filters;
             }
 
-            // Event Listeners for filters
-            document.querySelectorAll('.filter-input, #search, #property-type, #status, #price-range, #category, #sort-by, #amenities-filter-container input[type="checkbox"]')
-                .forEach(input => {
-                input.addEventListener('change', () => fetchProperties(1, collectFilters()));
-            });
-            document.getElementById('apply-filters')?.addEventListener('click', () => fetchProperties(1, collectFilters())); // If apply button is specifically used
+            function setFilterStatesFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                currentPage = parseInt(params.get('page')) || 1;
 
+                document.getElementById('search').value = params.get('search') || '';
+                document.getElementById('property-type').value = params.get('type') || '';
+                document.getElementById('status').value = params.get('status') || '';
+                
+                const priceRangeInput = document.getElementById('price-range');
+                const priceDisplay = document.getElementById('price-display');
+                const priceMaxFromUrl = params.get('price_max');
+
+                if (priceRangeInput && priceDisplay) { // Ensure elements exist
+                    if (priceMaxFromUrl) {
+                        priceRangeInput.value = priceMaxFromUrl;
+                        priceDisplay.textContent = '₹' + parseInt(priceMaxFromUrl).toLocaleString() + (parseInt(priceMaxFromUrl) === parseInt(priceRangeInput.max) ? '+' : '');
+                    } else { 
+                        priceRangeInput.value = priceRangeInput.max; 
+                        priceDisplay.textContent = '₹' + parseInt(priceRangeInput.max).toLocaleString() + '+';
+                    }
+                }
+
+                document.getElementById('category').value = params.get('category') || '';
+
+                const sortByFromUrl = params.get('sort_by');
+                const sortOrderFromUrl = params.get('sort_order');
+                let finalSortByValue = 'latest'; 
+                if (sortByFromUrl && sortOrderFromUrl) {
+                    let sort_by_col_ui = '';
+                    if (sortByFromUrl === 'p.created_at') sort_by_col_ui = 'latest';
+                    else if (sortByFromUrl === 'p.name') sort_by_col_ui = 'name';
+                    else if (sortByFromUrl === 'p.base_price') sort_by_col_ui = 'price';
+                    else if (sortByFromUrl === 'p.property_rating') sort_by_col_ui = 'rating';
+                    
+                    if(sort_by_col_ui) {
+                        finalSortByValue = (sort_by_col_ui === 'latest') ? 'latest' : `${sort_by_col_ui}-${sortOrderFromUrl.toLowerCase()}`;
+                    }
+                }
+                document.getElementById('sort-by').value = finalSortByValue;
+
+                const amenitiesFromUrl = params.getAll('amenities[]'); 
+                document.querySelectorAll('#amenities-filter-container input[name="amenities[]"]').forEach(checkbox => {
+                    checkbox.checked = amenitiesFromUrl.includes(checkbox.value);
+                });
+            }
+            
+            function updateUrlWithFilters(page, filters) {
+                const params = new URLSearchParams();
+                if (page > 1) { 
+                    params.set('page', page);
+                }
+
+                for (const key in filters) {
+                    if (filters[key] !== undefined && filters[key] !== '' && !(Array.isArray(filters[key]) && filters[key].length === 0) ) {
+                        if (key === 'amenities' && Array.isArray(filters[key])) {
+                            filters[key].forEach(value => params.append('amenities[]', value));
+                        } else {
+                            params.set(key, filters[key]);
+                        }
+                    }
+                }
+                const newQueryString = params.toString();
+                const newUrl = `${window.location.pathname}${newQueryString ? '?' : ''}${newQueryString}`;
+                
+                const currentFullUrl = window.location.pathname + window.location.search;
+                if (newUrl !== currentFullUrl) { 
+                     history.pushState({path: newUrl}, '', newUrl);
+                }
+            }
+            
+            // Global fetchProperties variable that will wrap the original one
+            let fetchProperties = _originalFetchProperties; // Initialize with the original
+
+            // Wrap the original fetchProperties to include URL updating
+            fetchProperties = async function(page = 1, filters = {}) { 
+                let effectiveFilters = filters;
+                // If filters is empty (e.g. from pagination click), use currentFilters
+                if (Object.keys(filters).length === 0 && Object.keys(currentFilters).length > 0) {
+                    effectiveFilters = currentFilters;
+                } else {
+                    currentFilters = filters; // Update global currentFilters if new filters are passed
+                }
+                
+                await _originalFetchProperties(page, effectiveFilters); 
+                updateUrlWithFilters(page, effectiveFilters); 
+            }
+            
+            // Make the wrapped fetchProperties available for pagination clicks
+            window.fetchPropertiesWrapper = async function(page) {
+                await fetchProperties(page, currentFilters); // Uses the global currentFilters
+            };
+            // Update renderPagination to use fetchPropertiesWrapper
+            // This change is applied directly in renderPagination's onclick attributes.
+
+
+            // Event Listeners for filter inputs
+            const filterTriggerElements = [
+                document.getElementById('search'),
+                document.getElementById('property-type'),
+                document.getElementById('status'),
+                document.getElementById('category'),
+                document.getElementById('sort-by')
+            ];
+            document.querySelectorAll('#amenities-filter-container input[type="checkbox"]').forEach(el => filterTriggerElements.push(el));
+            
+            filterTriggerElements.forEach(input => {
+                if(input) {
+                    input.addEventListener('change', () => {
+                         fetchProperties(1, collectFilters()); 
+                    });
+                }
+            });
+            
+            const priceRangeInputElem = document.getElementById('price-range');
+            if (priceRangeInputElem) {
+                priceRangeInputElem.addEventListener('input', function() { 
+                     const display = document.getElementById('price-display');
+                     if (display) { 
+                        if (parseInt(this.value) === parseInt(this.max)) {
+                            display.textContent = '₹' + parseInt(this.value).toLocaleString() + '+';
+                        } else {
+                            display.textContent = '₹' + parseInt(this.value).toLocaleString();
+                        }
+                     }
+                });
+                priceRangeInputElem.addEventListener('change', () => { 
+                    fetchProperties(1, collectFilters());
+                });
+            }
+
+            // Apply Filters Button
+            document.getElementById('apply-filters')?.addEventListener('click', () => {
+                fetchProperties(1, collectFilters());
+            }); 
+
+            // Reset Filters Button
             document.getElementById('reset-filters').addEventListener('click', function() {
                 document.getElementById('search').value = '';
                 document.getElementById('property-type').value = '';
                 document.getElementById('status').value = '';
-                const priceRangeInput = document.getElementById('price-range');
-                priceRangeInput.value = priceRangeInput.max; // Reset to max or a default
-                document.getElementById('price-display').textContent = '₹' + parseInt(priceRangeInput.max).toLocaleString() + '+';
+                const priceRangeInputElem = document.getElementById('price-range');
+                const priceDisplayElem = document.getElementById('price-display');
+                if(priceRangeInputElem && priceDisplayElem) {
+                    priceRangeInputElem.value = priceRangeInputElem.max; 
+                    priceDisplayElem.textContent = '₹' + parseInt(priceRangeInputElem.max).toLocaleString() + '+';
+                }
                 document.getElementById('category').value = '';
                 document.getElementById('sort-by').value = 'latest';
                 document.querySelectorAll('#amenities-filter-container input[type="checkbox"]').forEach(cb => cb.checked = false);
-                fetchProperties(1, {}); // Fetch with empty filters
+                
+                currentFilters = {}; 
+                fetchProperties(1, {}); 
             });
             
-            if(priceRange) {
-                priceRange.addEventListener('input', function() {
-                    if (parseInt(this.value) === parseInt(this.max)) {
-                         priceDisplay.textContent = '₹' + parseInt(this.value).toLocaleString() + '+';
-                    } else {
-                         priceDisplay.textContent = '₹' + parseInt(this.value).toLocaleString();
-                    }
-                });
-            }
+            // --- End of Enhanced Filter Logic ---
             
             // Checkbox handling and bulk actions (initial setup)
             function updateSelectedCount() {
                 const selectedCheckboxes = document.querySelectorAll('.property-select:checked');
                 const count = selectedCheckboxes.length;
-                selectedCountDisplay.textContent = `(${count} selected)`;
+                if(selectedCountDisplay) selectedCountDisplay.textContent = `(${count} selected)`;
 
                 const enableBulk = count > 0;
                 [bulkActivateBtn, bulkDeactivateBtn, bulkDeleteBtn, bulkExportBtn].forEach(btn => {
@@ -1094,21 +933,25 @@
                 }
             }
             
-            selectAllCheckbox?.addEventListener('change', function() {
-                document.querySelectorAll('.property-select').forEach(checkbox => {
-                    checkbox.checked = this.checked;
+            if(selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    document.querySelectorAll('.property-select').forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    updateSelectedCount();
                 });
-                updateSelectedCount();
-            });
+            }
+
 
             function attachRowEventListeners() {
                 document.querySelectorAll('.property-select').forEach(checkbox => {
                     checkbox.addEventListener('change', () => {
-                        const allChecked = Array.from(document.querySelectorAll('.property-select')).every(cb => cb.checked);
-                        const anyChecked = Array.from(document.querySelectorAll('.property-select')).some(cb => cb.checked);
                         if(selectAllCheckbox) {
-                           selectAllCheckbox.checked = allChecked;
-                           selectAllCheckbox.indeterminate = anyChecked && !allChecked;
+                            const allCheckboxes = document.querySelectorAll('.property-select');
+                            const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+                            const anyChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+                            selectAllCheckbox.checked = allChecked;
+                            selectAllCheckbox.indeterminate = anyChecked && !allChecked;
                         }
                         updateSelectedCount();
                     });
@@ -1117,33 +960,35 @@
                 document.querySelectorAll('.delete-property-btn').forEach(button => {
                     button.addEventListener('click', function() {
                         propertyIdToDelete = this.dataset.id;
-                        deleteModal.classList.remove('hidden');
+                        if(deleteModal) deleteModal.classList.remove('hidden');
                     });
                 });
             }
             
             // Single Delete Action
-            confirmDeleteBtn?.addEventListener('click', async function() {
-                if (!propertyIdToDelete) return;
-                try {
-                    const formData = new FormData();
-                    formData.append('property_id', propertyIdToDelete);
-                    const response = await fetch('handle_delete_property.php', { method: 'POST', body: formData });
-                    const data = await response.json();
-                    if (data.success) {
-                        displayAjaxMessage('success', data.message || 'Property deleted successfully.');
-                        fetchProperties(currentPage, currentFilters); // Refresh
-                    } else {
-                        displayAjaxMessage('error', data.message || 'Failed to delete property.');
+            if(confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', async function() {
+                    if (!propertyIdToDelete) return;
+                    try {
+                        const formData = new FormData();
+                        formData.append('property_id', propertyIdToDelete);
+                        const response = await fetch('handle_delete_property.php', { method: 'POST', body: formData });
+                        const data = await response.json();
+                        if (data.success) {
+                            displayAjaxMessage('success', data.message || 'Property deleted successfully.');
+                            fetchProperties(currentPage, currentFilters); 
+                        } else {
+                            displayAjaxMessage('error', data.message || 'Failed to delete property.');
+                        }
+                    } catch (error) {
+                        displayAjaxMessage('error', 'Error deleting property: ' + error.message);
+                    } finally {
+                        if(deleteModal) deleteModal.classList.add('hidden');
+                        propertyIdToDelete = null;
                     }
-                } catch (error) {
-                    displayAjaxMessage('error', 'Error deleting property: ' + error.message);
-                } finally {
-                    deleteModal.classList.add('hidden');
-                    propertyIdToDelete = null;
-                }
-            });
-            cancelDeleteBtn?.addEventListener('click', () => deleteModal.classList.add('hidden'));
+                });
+            }
+            if(cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', () => { if(deleteModal) deleteModal.classList.add('hidden'); });
 
             // Bulk Actions
             async function handleBulkAction(action) {
@@ -1162,172 +1007,38 @@
                     const data = await response.json();
                     if (data.success) {
                         displayAjaxMessage('success', data.message || `Bulk ${action} successful.`);
-                        fetchProperties(currentPage, currentFilters); // Refresh
+                        fetchProperties(currentPage, currentFilters); 
                     } else {
                         displayAjaxMessage('error', data.message || `Failed to perform bulk ${action}.`);
                     }
                 } catch (error) {
                     displayAjaxMessage('error', `Error performing bulk ${action}: ` + error.message);
                 } finally {
-                    if (action === 'delete') bulkDeleteModal.classList.add('hidden');
-                    if(selectAllCheckbox) selectAllCheckbox.checked = false; // Uncheck select all
+                    if (action === 'delete' && bulkDeleteModal) bulkDeleteModal.classList.add('hidden');
+                    if(selectAllCheckbox) selectAllCheckbox.checked = false; 
                     updateSelectedCount();
                 }
             }
 
-            bulkActivateBtn?.addEventListener('click', () => handleBulkAction('activate'));
-            bulkDeactivateBtn?.addEventListener('click', () => handleBulkAction('deactivate'));
-            bulkDeleteBtn?.addEventListener('click', () => {
-                if (Array.from(document.querySelectorAll('.property-select:checked')).length > 0) {
-                    bulkDeleteModal.classList.remove('hidden');
-                } else {
-                    displayAjaxMessage('error', 'No properties selected for deletion.');
-                }
-            });
-            confirmBulkDeleteBtn?.addEventListener('click', () => handleBulkAction('delete'));
-            cancelBulkDeleteBtn?.addEventListener('click', () => bulkDeleteModal.classList.add('hidden'));
-            // bulkExportBtn?.addEventListener('click', () => handleBulkAction('export')); // Export needs specific backend
+            if(bulkActivateBtn) bulkActivateBtn.addEventListener('click', () => handleBulkAction('activate'));
+            if(bulkDeactivateBtn) bulkDeactivateBtn.addEventListener('click', () => handleBulkAction('deactivate'));
+            if(bulkDeleteBtn) {
+                bulkDeleteBtn.addEventListener('click', () => {
+                    if (Array.from(document.querySelectorAll('.property-select:checked')).length > 0) {
+                       if(bulkDeleteModal) bulkDeleteModal.classList.remove('hidden');
+                    } else {
+                        displayAjaxMessage('error', 'No properties selected for deletion.');
+                    }
+                });
+            }
+            if(confirmBulkDeleteBtn) confirmBulkDeleteBtn.addEventListener('click', () => handleBulkAction('delete'));
+            if(cancelBulkDeleteBtn) cancelBulkDeleteBtn.addEventListener('click', () => {if(bulkDeleteModal) bulkDeleteModal.classList.add('hidden');});
+            
+            // Initial fetch logic:
+            setFilterStatesFromUrl(); 
+            currentFilters = collectFilters(); 
+            fetchProperties(currentPage, currentFilters); 
 
-            // Initial fetch
-            fetchProperties();
-
-        });
-    </script>
-</body>
-</html>
-            
-            // Reset filters
-            document.getElementById('reset-filters').addEventListener('click', function() {
-                document.getElementById('search').value = '';
-                document.getElementById('property-type').value = '';
-                document.getElementById('status').value = '';
-                document.getElementById('price-range').value = 20000;
-                document.getElementById('price-display').textContent = '₹20,000';
-                document.getElementById('category').value = '';
-                document.getElementById('sort-by').value = 'latest';
-                
-                // Uncheck all amenities
-                document.querySelectorAll('#amenities input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-            });
-            
-            // Delete property
-            const deleteButtons = document.querySelectorAll('.delete-property');
-            const deleteModal = document.getElementById('delete-modal');
-            const cancelDelete = document.getElementById('cancel-delete');
-            const confirmDelete = document.getElementById('confirm-delete');
-            let propertyToDelete = null;
-            
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    propertyToDelete = this.getAttribute('data-id');
-                    deleteModal.classList.remove('hidden');
-                });
-            });
-            
-            cancelDelete.addEventListener('click', function() {
-                deleteModal.classList.add('hidden');
-                propertyToDelete = null;
-            });
-            
-            confirmDelete.addEventListener('click', function() {
-                // In a real implementation, this would make an AJAX request to delete the property
-                console.log(`Deleting property with ID: ${propertyToDelete}`);
-                
-                // For demo purposes, let's just hide the row
-                const row = document.querySelector(`.property-select[data-id="${propertyToDelete}"]`).closest('tr');
-                row.classList.add('hidden');
-                
-                deleteModal.classList.add('hidden');
-                propertyToDelete = null;
-                
-                // Show a confirmation message
-                alert('Property deleted successfully');
-            });
-            
-            // Bulk delete
-            const bulkDeleteButton = document.getElementById('bulk-delete');
-            const bulkDeleteModal = document.getElementById('bulk-delete-modal');
-            const cancelBulkDelete = document.getElementById('cancel-bulk-delete');
-            const confirmBulkDelete = document.getElementById('confirm-bulk-delete');
-            
-            bulkDeleteButton.addEventListener('click', function() {
-                const count = Array.from(propertyCheckboxes).filter(cb => cb.checked).length;
-                
-                if (count > 0) {
-                    bulkDeleteModal.classList.remove('hidden');
-                }
-            });
-            
-            cancelBulkDelete.addEventListener('click', function() {
-                bulkDeleteModal.classList.add('hidden');
-            });
-            
-            confirmBulkDelete.addEventListener('click', function() {
-                // In a real implementation, this would make an AJAX request to delete the selected properties
-                const selectedIds = Array.from(propertyCheckboxes)
-                    .filter(cb => cb.checked)
-                    .map(cb => cb.getAttribute('data-id'));
-                
-                console.log(`Deleting properties with IDs: ${selectedIds.join(', ')}`);
-                
-                // For demo purposes, let's just hide the rows
-                selectedIds.forEach(id => {
-                    const row = document.querySelector(`.property-select[data-id="${id}"]`).closest('tr');
-                    row.classList.add('hidden');
-                });
-                
-                // Reset selected count
-                selectAll.checked = false;
-                updateSelectedCount();
-                
-                bulkDeleteModal.classList.add('hidden');
-                
-                // Show a confirmation message
-                alert(`${selectedIds.length} properties deleted successfully`);
-            });
-            
-            // Bulk activate/deactivate
-            document.getElementById('bulk-activate').addEventListener('click', function() {
-                const selectedIds = Array.from(propertyCheckboxes)
-                    .filter(cb => cb.checked)
-                    .map(cb => cb.getAttribute('data-id'));
-                
-                console.log(`Activating properties with IDs: ${selectedIds.join(', ')}`);
-                
-                // Show a confirmation message
-                alert(`${selectedIds.length} properties activated successfully`);
-            });
-            
-            document.getElementById('bulk-deactivate').addEventListener('click', function() {
-                const selectedIds = Array.from(propertyCheckboxes)
-                    .filter(cb => cb.checked)
-                    .map(cb => cb.getAttribute('data-id'));
-                
-                console.log(`Deactivating properties with IDs: ${selectedIds.join(', ')}`);
-                
-                // Show a confirmation message
-                alert(`${selectedIds.length} properties deactivated successfully`);
-            });
-            
-            // Bulk export
-            document.getElementById('bulk-export').addEventListener('click', function() {
-                const selectedIds = Array.from(propertyCheckboxes)
-                    .filter(cb => cb.checked)
-                    .map(cb => cb.getAttribute('data-id'));
-                
-                console.log(`Exporting properties with IDs: ${selectedIds.join(', ')}`);
-                
-                // Show a confirmation message
-                alert(`${selectedIds.length} properties exported successfully`);
-            });
-            
-            // Apply filters
-            document.getElementById('apply-filters').addEventListener('click', function() {
-                // In a real implementation, this would make an AJAX request or submit a form
-                alert('Filters applied');
-            });
         });
     </script>
 </body>
