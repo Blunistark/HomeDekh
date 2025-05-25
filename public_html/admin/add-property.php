@@ -1057,16 +1057,89 @@
                 container.appendChild(clone);
             }
             
+            // Function to display AJAX messages (success or error)
+            function displayAjaxMessage(type, message) {
+                const successDiv = document.getElementById('ajax-success-message');
+                const errorDiv = document.getElementById('ajax-error-message');
+                const successText = document.getElementById('ajax-success-text');
+                const errorText = document.getElementById('ajax-error-text');
+
+                // Hide both first
+                successDiv.classList.add('hidden');
+                errorDiv.classList.add('hidden');
+
+                if (type === 'success') {
+                    successText.textContent = message;
+                    successDiv.classList.remove('hidden');
+                    // successDiv.focus(); // For screen readers and visibility - focus might be too abrupt, scrolling is main feedback
+                } else if (type === 'error') {
+                    errorText.textContent = message;
+                    errorDiv.classList.remove('hidden');
+                    // errorDiv.focus(); 
+                }
+                window.scrollTo(0, 0); // Scroll to top to make message visible
+            }
+
             // Create Property Button
-            document.getElementById('create-property-btn').addEventListener('click', function() {
+            document.getElementById('create-property-btn').addEventListener('click', function(event) {
+                event.preventDefault(); // Stop default browser submission
+
                 // Validate form fields
                 if (!validateForm()) {
-                    return;
+                    return; // Validation failed, do not proceed
                 }
                 
-                // Simulate form submission
-                alert('Property created successfully!');
-                window.location.href = 'properties.php';
+                const form = document.getElementById('addPropertyForm');
+                const formData = new FormData(form);
+                
+                // Append Gallery Files
+                galleryFiles.forEach(file => formData.append('gallery-image-upload[]', file));
+
+                const createButton = this; // `this` refers to the button
+                const originalButtonHTML = createButton.innerHTML; // Save original button content
+
+                // Visual Feedback (Button Busy State)
+                createButton.disabled = true;
+                createButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                
+                // Perform fetch Request
+                fetch('handle_add_property.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    // Check if response is ok (status in the range 200-299)
+                    if (!response.ok) {
+                        // If not OK, try to parse as JSON for structured error, else throw generic error
+                        return response.json().then(errData => {
+                            throw new Error(errData.message || `Server responded with status: ${response.status}`);
+                        }).catch(() => { // If response not JSON or other parsing error
+                            throw new Error(`Server responded with status: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        displayAjaxMessage('success', data.message || 'Property added successfully! Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = 'properties.php';
+                        }, 2500);
+                        // Button remains disabled due to redirect
+                    } else {
+                        displayAjaxMessage('error', data.message || 'An error occurred.');
+                        // Re-enable button on error
+                        createButton.disabled = false;
+                        createButton.innerHTML = originalButtonHTML;
+                    }
+                })
+                .catch(error => {
+                    console.error('Submission error:', error);
+                    displayAjaxMessage('error', 'A network or script error occurred: ' + error.message);
+                    // Re-enable button on error
+                    createButton.disabled = false;
+                    createButton.innerHTML = originalButtonHTML;
+                });
             });
             
             // Floating Save Button
