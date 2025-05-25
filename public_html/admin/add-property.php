@@ -1,3 +1,4 @@
+<?php if (session_status() == PHP_SESSION_NONE) { session_start(); } ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,7 +121,35 @@
 
         <!-- Main Content -->
         <main id="main-content" class="flex-1 overflow-auto transition-all duration-300 lg:ml-64 ml-0">
+            <form id="addPropertyForm" enctype="multipart/form-data">
             <div class="py-6 px-4 sm:px-6 lg:px-8">
+                <!-- Session Messages -->
+                <?php if (isset($_SESSION['success_message'])): ?>
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Success!</strong>
+                        <span class="block sm:inline"><?php echo $_SESSION['success_message']; ?></span>
+                    </div>
+                    <?php unset($_SESSION['success_message']); ?>
+                <?php endif; ?>
+                <?php if (isset($_SESSION['error_message'])): ?>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline"><?php echo $_SESSION['error_message']; ?></span>
+                    </div>
+                    <?php unset($_SESSION['error_message']); ?>
+                <?php endif; ?>
+
+                <!-- Error message display area for AJAX -->
+                <div id="ajax-error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Error!</strong>
+                    <span class="block sm:inline" id="ajax-error-text"></span>
+                </div>
+                <div id="ajax-success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Success!</strong>
+                    <span class="block sm:inline" id="ajax-success-text"></span>
+                </div>
+
+
                 <!-- Breadcrumb -->
                 <div class="mb-6 flex items-center space-x-2 text-sm">
                     <a href="./" class="text-gray-500 hover:text-gray-700">Dashboard</a>
@@ -138,13 +167,13 @@
                 <!-- Property Status -->
                 <div class="bg-white rounded-lg shadow-sm p-4 mb-6 flex items-center justify-between">
                     <div class="flex items-center">
-                        <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 mr-3">
+                        <span id="current-status-display" class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 mr-3">
                             Draft
                         </span>
-                        <span class="text-sm text-gray-500">Not yet published</span>
+                        <span id="current-status-text" class="text-sm text-gray-500">Not yet published</span>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <select id="property-status" class="border rounded-md text-sm px-3 py-1.5">
+                        <select id="property-status" name="property-status" class="border rounded-md text-sm px-3 py-1.5">
                             <option value="draft" selected>Draft</option>
                             <option value="pending">Pending Review</option>
                             <option value="active">Active (Publish Now)</option>
@@ -187,12 +216,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="property-name" class="block text-sm font-medium text-gray-700 mb-1">Property Name*</label>
-                                <input type="text" id="property-name" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. Sunshine PG for Girls">
+                                <input type="text" id="property-name" name="property-name" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. Sunshine PG for Girls" required>
                             </div>
                             
                             <div>
                                 <label for="property-type" class="block text-sm font-medium text-gray-700 mb-1">Property Type*</label>
-                                <select id="property-type" class="w-full border rounded-lg px-3 py-2">
+                                <select id="property-type" name="property-type" class="w-full border rounded-lg px-3 py-2" required>
                                     <option value="">Select Property Type</option>
                                     <option value="pg">PG</option>
                                     <option value="hostel">Hostel</option>
@@ -202,7 +231,7 @@
 
                             <div>
                                 <label for="property-category" class="block text-sm font-medium text-gray-700 mb-1">Category*</label>
-                                <select id="property-category" class="w-full border rounded-lg px-3 py-2">
+                                <select id="property-category" name="property-category" class="w-full border rounded-lg px-3 py-2" required>
                                     <option value="">Select Category</option>
                                     <option value="girls">Girls Only</option>
                                     <option value="boys">Boys Only</option>
@@ -213,7 +242,7 @@
                             <div>
                                 <label for="property-rating" class="block text-sm font-medium text-gray-700 mb-1">Initial Rating (Optional)</label>
                                 <div class="flex items-center">
-                                    <input type="number" id="property-rating" class="w-24 border rounded-lg px-3 py-2" placeholder="e.g. 4.5" min="0" max="5" step="0.1">
+                                    <input type="number" id="property-rating" name="property-rating" class="w-24 border rounded-lg px-3 py-2" placeholder="e.g. 4.5" min="0" max="5" step="0.1">
                                     <div class="flex ml-3">
                                         <i class="fas fa-star text-gray-300"></i>
                                         <i class="fas fa-star text-gray-300"></i>
@@ -227,14 +256,14 @@
 
                             <div>
                                 <label for="property-reviewcount" class="block text-sm font-medium text-gray-700 mb-1">Review Count (Optional)</label>
-                                <input type="number" id="property-reviewcount" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 10">
+                                <input type="number" id="property-reviewcount" name="property-reviewcount" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 10">
                                 <p class="text-xs text-gray-500 mt-1">Leave empty for new properties</p>
                             </div>
 
                             <div>
                                 <label for="property-price" class="block text-sm font-medium text-gray-700 mb-1">Base Price (₹/month)*</label>
-                                <input type="number" id="property-price" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 12000">
-                                <p class="text-xs text-gray-500 mt-1">This is the starting price shown on listing cards</p>
+                                <input type="number" id="property-price" name="property-price" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 12000" required>
+                                <p class="text-xs text-gray-500 mt-1">This is the starting price shown on listing cards (corresponds to `base_price` in DB)</p>
                             </div>
                         </div>
                         
@@ -265,7 +294,7 @@
                                 </div>
                                 
                                 <div id="main-image-upload-btn">
-                                    <input type="file" id="main-image-upload" class="hidden" accept="image/*">
+                                    <input type="file" id="main-image-upload" name="main-image-upload" class="hidden" accept="image/*">
                                     <label for="main-image-upload" class="cursor-pointer">
                                         <div class="flex flex-col items-center">
                                             <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
@@ -286,9 +315,10 @@
                                 <!-- Gallery images will be added dynamically -->
                                 
                                 <!-- Add Image Placeholder -->
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-40">
-                                    <input type="file" id="gallery-image-upload" class="hidden" accept="image/*">
-                                    <label for="gallery-image-upload" class="cursor-pointer text-center">
+                                <div id="gallery-upload-placeholder" class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-40">
+                                    <!-- This input is for triggering file dialog for single gallery image, JS will handle it -->
+                                    <input type="file" id="gallery-image-trigger" class="hidden" accept="image/*">
+                                    <label for="gallery-image-trigger" class="cursor-pointer text-center">
                                         <i class="fas fa-plus text-gray-400 text-2xl mb-2"></i>
                                         <p class="text-sm text-gray-500">Add Image</p>
                                     </label>
@@ -296,12 +326,15 @@
                             </div>
                             
                             <div class="mt-4">
-                                <input type="file" id="multiple-images-upload" class="hidden" multiple accept="image/*">
-                                <label for="multiple-images-upload" class="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                <!-- This input is for triggering file dialog for multiple gallery images, JS will handle it -->
+                                <input type="file" id="multiple-images-trigger" class="hidden" multiple accept="image/*">
+                                <label for="multiple-images-trigger" class="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                     <i class="fas fa-upload mr-2"></i>
                                     Upload Multiple Images
                                 </label>
                             </div>
+                            <!-- Hidden input to store gallery image file names for FormData, if needed by JS strategy -->
+                            <!-- Or JS directly appends files to FormData with name gallery-image-upload[] -->
                         </div>
                         
                         <div class="flex justify-between mt-6">
@@ -324,18 +357,18 @@
                         
                         <div class="mb-6">
                             <label for="short-description" class="block text-sm font-medium text-gray-700 mb-1">Short Description (Paragraph 1)*</label>
-                            <textarea id="short-description" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Write a brief introduction of your property (100-150 words)"></textarea>
+                            <textarea id="short-description" name="short-description" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Write a brief introduction of your property (100-150 words)" required></textarea>
                             <p class="text-xs text-gray-500 mt-1">This will be shown as the first paragraph on the property details page</p>
                         </div>
                         
                         <div class="mb-6">
                             <label for="long-description" class="block text-sm font-medium text-gray-700 mb-1">Detailed Description (Paragraph 2)*</label>
-                            <textarea id="long-description" rows="5" class="w-full border rounded-lg px-3 py-2" placeholder="Provide more details about your property, facilities, and what makes it special (200-300 words)"></textarea>
+                            <textarea id="long-description" name="long-description" rows="5" class="w-full border rounded-lg px-3 py-2" placeholder="Provide more details about your property, facilities, and what makes it special (200-300 words)" required></textarea>
                         </div>
                         
                         <div>
                             <label for="meta-description" class="block text-sm font-medium text-gray-700 mb-1">Meta Description (for SEO)</label>
-                            <textarea id="meta-description" rows="2" class="w-full border rounded-lg px-3 py-2" placeholder="Brief description for search engines (under 160 characters)"></textarea>
+                            <textarea id="meta-description" name="meta-description" rows="2" class="w-full border rounded-lg px-3 py-2" placeholder="Brief description for search engines (under 160 characters)"></textarea>
                             <p class="text-xs text-gray-500 mt-1">This description will be used for SEO purposes. Keep it under 160 characters.</p>
                         </div>
                         
@@ -393,13 +426,13 @@
                             
                             <div class="p-4 bg-yellow-50 border border-yellow-100 rounded-lg">
                                 <div class="flex items-center mb-3">
-                                    <input type="checkbox" id="has-special-offer" class="mr-2">
+                                    <input type="checkbox" id="has-special-offer" name="has-special-offer" class="mr-2">
                                     <label for="has-special-offer" class="text-sm font-medium">Enable Special Offer</label>
                                 </div>
                                 
                                 <div id="special-offer-content" class="hidden">
                                     <label for="special-offer-text" class="block text-sm font-medium text-gray-700 mb-1">Offer Text</label>
-                                    <textarea id="special-offer-text" rows="2" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. Book now and get 10% off on your first month's rent"></textarea>
+                                    <textarea id="special-offer-text" name="special-offer-text" rows="2" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. Book now and get 10% off on your first month's rent"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -424,114 +457,94 @@
                         
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-3">Main Amenities</label>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                <!-- WiFi -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="amenities-checkbox-container">
+                                <!-- Amenities will be populated by JS or hardcoded with correct names/values -->
+                                <!-- Example: WiFi (assuming amenity ID 1) -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="wifi">
-                                    <label for="wifi" class="flex items-center">
+                                    <input type="checkbox" id="amenity-1" name="amenities[]" value="1">
+                                    <label for="amenity-1" class="flex items-center">
                                         <i class="fas fa-wifi text-[#1a4977] mr-2"></i>
                                         <span>WiFi</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Food -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="food">
-                                    <label for="food" class="flex items-center">
+                                    <input type="checkbox" id="amenity-2" name="amenities[]" value="2">
+                                    <label for="amenity-2" class="flex items-center">
                                         <i class="fas fa-utensils text-[#1a4977] mr-2"></i>
                                         <span>Food</span>
                                     </label>
                                 </div>
-                                
-                                <!-- TV -->
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="tv">
-                                    <label for="tv" class="flex items-center">
+                                 <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="amenity-3" name="amenities[]" value="3">
+                                    <label for="amenity-3" class="flex items-center">
                                         <i class="fas fa-tv text-[#1a4977] mr-2"></i>
                                         <span>TV</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Attached Bathroom -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="bathroom">
-                                    <label for="bathroom" class="flex items-center">
+                                    <input type="checkbox" id="amenity-4" name="amenities[]" value="4">
+                                    <label for="amenity-4" class="flex items-center">
                                         <i class="fas fa-bath text-[#1a4977] mr-2"></i>
                                         <span>Attached Bathroom</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Refrigerator -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="refrigerator">
-                                    <label for="refrigerator" class="flex items-center">
+                                    <input type="checkbox" id="amenity-5" name="amenities[]" value="5">
+                                    <label for="amenity-5" class="flex items-center">
                                         <i class="fas fa-snowflake text-[#1a4977] mr-2"></i>
                                         <span>Refrigerator</span>
                                     </label>
                                 </div>
-                                
-                                <!-- AC -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="ac">
-                                    <label for="ac" class="flex items-center">
+                                    <input type="checkbox" id="amenity-6" name="amenities[]" value="6">
+                                    <label for="amenity-6" class="flex items-center">
                                         <i class="fas fa-wind text-[#1a4977] mr-2"></i>
                                         <span>AC</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Gym -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="gym">
-                                    <label for="gym" class="flex items-center">
+                                    <input type="checkbox" id="amenity-7" name="amenities[]" value="7">
+                                    <label for="amenity-7" class="flex items-center">
                                         <i class="fas fa-dumbbell text-[#1a4977] mr-2"></i>
                                         <span>Gym</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Laundry -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="laundry">
-                                    <label for="laundry" class="flex items-center">
+                                    <input type="checkbox" id="amenity-8" name="amenities[]" value="8">
+                                    <label for="amenity-8" class="flex items-center">
                                         <i class="fas fa-tshirt text-[#1a4977] mr-2"></i>
                                         <span>Laundry</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Study Room -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="study-room">
-                                    <label for="study-room" class="flex items-center">
+                                    <input type="checkbox" id="amenity-9" name="amenities[]" value="9">
+                                    <label for="amenity-9" class="flex items-center">
                                         <i class="fas fa-book text-[#1a4977] mr-2"></i>
                                         <span>Study Room</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Parking -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="parking">
-                                    <label for="parking" class="flex items-center">
+                                    <input type="checkbox" id="amenity-10" name="amenities[]" value="10">
+                                    <label for="amenity-10" class="flex items-center">
                                         <i class="fas fa-parking text-[#1a4977] mr-2"></i>
                                         <span>Parking</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Security -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="security">
-                                    <label for="security" class="flex items-center">
+                                    <input type="checkbox" id="amenity-11" name="amenities[]" value="11">
+                                    <label for="amenity-11" class="flex items-center">
                                         <i class="fas fa-shield-alt text-[#1a4977] mr-2"></i>
                                         <span>24/7 Security</span>
                                     </label>
                                 </div>
-                                
-                                <!-- Power Backup -->
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="power-backup">
-                                    <label for="power-backup" class="flex items-center">
+                                    <input type="checkbox" id="amenity-12" name="amenities[]" value="12">
+                                    <label for="amenity-12" class="flex items-center">
                                         <i class="fas fa-bolt text-[#1a4977] mr-2"></i>
                                         <span>Power Backup</span>
                                     </label>
                                 </div>
+                                <!-- Add more amenities as needed, ensuring unique IDs and correct values -->
                             </div>
                         </div>
                         
@@ -569,35 +582,39 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Full Address*</label>
-                                <textarea id="address" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Enter the complete address"></textarea>
+                                <textarea id="address" name="address" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Enter the complete address" required></textarea>
                             </div>
                             
                             <div>
                                 <label for="landmark" class="block text-sm font-medium text-gray-700 mb-1">Landmark/Nearby*</label>
-                                <input type="text" id="landmark" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="e.g. Stanford University">
+                                <input type="text" id="landmark" name="landmark" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="e.g. Stanford University" required>
                                 
                                 <label for="distance" class="block text-sm font-medium text-gray-700 mb-1">Distance from Landmark*</label>
                                 <div class="flex">
-                                    <input type="text" id="distance" class="w-24 border rounded-l-lg px-3 py-2" placeholder="e.g. 0.5">
+                                    <input type="text" id="distance" name="distance" class="w-24 border rounded-l-lg px-3 py-2" placeholder="e.g. 0.5" required>
                                     <span class="bg-gray-100 border-t border-r border-b rounded-r-lg px-3 py-2 text-gray-500">km</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Map Location</label>
-                            <div class="bg-gray-200 h-64 rounded-lg relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Map Location (Coordinates)</label>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="map_latitude" class="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                                    <input type="text" id="map_latitude" name="map_latitude" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 28.6139">
+                                </div>
+                                <div>
+                                    <label for="map_longitude" class="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                                    <input type="text" id="map_longitude" name="map_longitude" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 77.2090">
+                                </div>
+                            </div>
+                            <div class="mt-2 bg-gray-200 h-64 rounded-lg relative">
                                 <div class="absolute inset-0 flex items-center justify-center">
                                     <p class="text-gray-500">Map placeholder - Integration with Google Maps API</p>
                                 </div>
-                                <div class="absolute bottom-4 right-4 space-y-2">
-                                    <button class="bg-white text-gray-700 px-3 py-1.5 rounded shadow-sm text-sm">
-                                        <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
-                                        Set Location
-                                    </button>
-                                </div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Drag the marker to set the exact location or enter coordinates manually</p>
+                            <p class="text-xs text-gray-500 mt-1">Enter coordinates manually or use map to set.</p>
                         </div>
                         
                         <div>
@@ -635,18 +652,18 @@
                             <div class="flex items-center mb-4">
                                 <div class="h-16 w-16 rounded-full overflow-hidden mr-4 relative">
                                     <img id="contact-image-preview" src="https://via.placeholder.com/150?text=Upload" alt="Contact person" class="h-full w-full object-cover">
-                                    <label for="contact-image-upload" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
+                                    <label for="contact-image-upload-trigger" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
                                         <i class="fas fa-camera text-white"></i>
                                     </label>
-                                    <input type="file" id="contact-image-upload" class="hidden" accept="image/*">
+                                    <input type="file" id="contact-image-upload-trigger" name="contact-image-upload" class="hidden" accept="image/*">
                                 </div>
                                 
                                 <div>
                                     <div class="mb-1">
-                                        <input type="text" placeholder="Contact Name" class="border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 text-gray-900 font-medium">
+                                        <input type="text" id="contact-name" name="contact-name" placeholder="Contact Name" class="border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 text-gray-900 font-medium">
                                     </div>
                                     <div>
-                                        <input type="text" placeholder="Title/Role" class="border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 text-sm text-gray-600">
+                                        <input type="text" id="contact-title" name="contact-title" placeholder="Title/Role" class="border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 text-sm text-gray-600">
                                     </div>
                                 </div>
                             </div>
@@ -654,12 +671,12 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number*</label>
-                                    <input type="tel" id="contact-phone" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. +91 9876543210">
+                                    <input type="tel" id="contact-phone" name="contact-phone" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. +91 9876543210" required>
                                 </div>
                                 
                                 <div>
                                     <label for="contact-whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
-                                    <input type="tel" id="contact-whatsapp" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. +91 9876543210">
+                                    <input type="tel" id="contact-whatsapp" name="contact-whatsapp" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. +91 9876543210">
                                     <div class="flex items-center mt-1">
                                         <input type="checkbox" id="same-as-phone" class="mr-2" checked>
                                         <label for="same-as-phone" class="text-xs text-gray-500">Same as phone number</label>
@@ -668,7 +685,7 @@
                                 
                                 <div>
                                     <label for="contact-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                    <input type="email" id="contact-email" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. contact@example.com">
+                                    <input type="email" id="contact-email" name="contact-email" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. contact@example.com">
                                 </div>
                             </div>
                         </div>
@@ -678,7 +695,7 @@
                             
                             <div class="p-4 bg-green-50 border border-green-100 rounded-lg">
                                 <label for="whatsapp-message" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Template Message</label>
-                                <textarea id="whatsapp-message" rows="3" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="Hi, I'm interested in {property_name} at {property_address}. Please provide more information."></textarea>
+                                <textarea id="whatsapp-message" name="whatsapp-template-message" rows="3" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="Hi, I'm interested in {property_name} at {property_address}. Please provide more information."></textarea>
                                 
                                 <p class="text-xs text-gray-600 mb-3">You can use the following placeholders in your message:</p>
                                 <div class="flex flex-wrap gap-2 mb-3">
@@ -689,7 +706,7 @@
                                 </div>
                                 
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="include-mention" class="mr-2" checked>
+                                    <input type="checkbox" id="include-mention" name="include-mention" class="mr-2" checked>
                                     <label for="include-mention" class="text-sm text-gray-700">Include "Mention that you found this on HomeDhek" text</label>
                                 </div>
                             </div>
@@ -716,6 +733,7 @@
                     </button>
                 </div>
             </div>
+            </form> <!-- Closing the main form -->
         </main>
     </div>
 
@@ -725,20 +743,21 @@
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                     <i class="room-type-icon fas fa-user text-gray-400 mr-2"></i>
-                    <input type="text" class="room-type-name-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-32" placeholder="e.g. Single Sharing">
+                    <input type="text" name="room_type_name[]" class="room-type-name-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-32" placeholder="e.g. Single Sharing">
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                     <span class="text-gray-500 mr-1">₹</span>
-                    <input type="number" class="room-type-price-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-20" placeholder="e.g. 8000">
+                    <input type="number" name="room_type_price[]" class="room-type-price-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-20" placeholder="e.g. 8000">
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <input type="number" class="room-type-beds-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-16 text-green-600" placeholder="e.g. 3">
+                <input type="number" name="room_type_capacity[]" class="room-type-beds-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-16 text-green-600" placeholder="e.g. 3">
+                <input type="hidden" name="room_type_description[]" class="room-type-description-input" value=""> <!-- Placeholder for description -->
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <button class="remove-room-type-btn text-red-600 hover:text-red-900">
+                <button type="button" class="remove-room-type-btn text-red-600 hover:text-red-900">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
@@ -748,13 +767,16 @@
     <!-- Additional Service Template (Hidden) -->
     <template id="additional-service-template">
         <div class="additional-service flex items-center">
-            <input type="checkbox" class="service-enabled mr-2" checked>
-            <div class="flex-grow">
-                <div class="flex items-center">
-                    <input type="text" class="service-name-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-full" placeholder="e.g. Daily housekeeping">
-                </div>
+            <input type="checkbox" class="service-enabled mr-2" checked> <!-- This checkbox is for UI, backend expects submitted fields -->
+            <div class="flex-grow mr-2">
+                <input type="text" name="service_name[]" class="service-name-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-full" placeholder="e.g. Daily housekeeping">
             </div>
-            <button class="remove-service-btn text-red-600 hover:text-red-900 ml-2">
+            <div class="flex items-center mr-2">
+                <span class="text-gray-500 mr-1">₹</span>
+                <input type="number" name="service_price[]" class="service-price-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-20" placeholder="e.g. 500">
+            </div>
+            <input type="hidden" name="service_description[]" class="service-description-input" value=""> <!-- Placeholder for description -->
+            <button type="button" class="remove-service-btn text-red-600 hover:text-red-900">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>
@@ -764,22 +786,23 @@
     <template id="nearby-place-template">
         <div class="nearby-place flex items-center border rounded-lg p-3">
             <div class="flex-grow">
-                <input type="text" class="place-name-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-full text-gray-900 font-medium" placeholder="Place Name">
+                <input type="text" name="nearby_place_name[]" class="place-name-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-full text-gray-900 font-medium" placeholder="Place Name">
                 <div class="flex items-center mt-1">
-                    <input type="text" class="place-distance-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-12 text-sm text-gray-600" placeholder="Distance">
+                     <input type="text" name="nearby_place_type[]" class="place-type-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-20 text-sm text-gray-600 mr-2" placeholder="Type (e.g. School)">
+                    <input type="text" name="nearby_place_distance_km[]" class="place-distance-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-12 text-sm text-gray-600" placeholder="Distance">
                     <span class="text-sm text-gray-600 mx-1">km</span>
-                    <span class="text-sm text-gray-500">(</span>
-                    <input type="text" class="place-minutes-input border-b border-dashed border-gray-300 bg-transparent focus:outline-none focus:border-gray-500 px-0 py-1 w-6 text-sm text-gray-600" placeholder="Mins">
-                    <span class="text-sm text-gray-600 ml-1">min walk)</span>
                 </div>
             </div>
-            <button class="remove-place-btn text-red-600 hover:text-red-900 ml-2">
+            <button type="button" class="remove-place-btn text-red-600 hover:text-red-900 ml-2">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>
     </template>
 
     <script>
+        // Store gallery files in an array to append to FormData
+        let galleryFiles = [];
+
         document.addEventListener('DOMContentLoaded', function() {
             // Sidebar toggle for mobile
             document.getElementById('sidebar-toggle').addEventListener('click', function() {
@@ -889,44 +912,70 @@
             
             // Function to add gallery image
             function addGalleryImage(file) {
+                galleryFiles.push(file); // Add to our file list
                 const reader = new FileReader();
                 
                 reader.onload = function(e) {
                     const container = document.getElementById('gallery-images-container');
-                    const uploadPlaceholder = container.querySelector('div');
+                    const uploadPlaceholder = document.getElementById('gallery-upload-placeholder'); 
                     
                     const imageDiv = document.createElement('div');
-                    imageDiv.className = 'relative';
+                    imageDiv.className = 'relative gallery-image-item'; 
                     imageDiv.innerHTML = `
                         <img src="${e.target.result}" alt="Gallery image" class="h-40 w-full object-cover rounded-lg">
-                        <button class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700">
+                        <button type="button" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 remove-gallery-image-btn" data-filename="${file.name}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     `;
                     
-                    // Add event listener to remove button
-                    imageDiv.querySelector('button').addEventListener('click', function() {
+                    imageDiv.querySelector('.remove-gallery-image-btn').addEventListener('click', function() {
+                        const fileName = this.getAttribute('data-filename');
+                        galleryFiles = galleryFiles.filter(f => f.name !== fileName);
                         imageDiv.remove();
                     });
                     
                     container.insertBefore(imageDiv, uploadPlaceholder);
                 };
-                
                 reader.readAsDataURL(file);
             }
             
-            // Contact Image Upload
-            document.getElementById('contact-image-upload').addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        document.getElementById('contact-image-preview').src = e.target.result;
-                    };
-                    
-                    reader.readAsDataURL(e.target.files[0]);
-                }
-            });
+             // Gallery Image Upload (single trigger) - uses 'gallery-image-trigger'
+            const galleryImageTrigger = document.getElementById('gallery-image-trigger');
+            if(galleryImageTrigger) {
+                galleryImageTrigger.addEventListener('change', function(e) {
+                    if (e.target.files && e.target.files[0]) {
+                        addGalleryImage(e.target.files[0]);
+                        this.value = ''; // Reset file input
+                    }
+                });
+            }
+            
+            // Multiple Images Upload (trigger) - uses 'multiple-images-trigger'
+            const multipleImagesTrigger = document.getElementById('multiple-images-trigger');
+            if(multipleImagesTrigger){
+                multipleImagesTrigger.addEventListener('change', function(e) {
+                    if (e.target.files && e.target.files.length > 0) {
+                        for (let i = 0; i < e.target.files.length; i++) {
+                            addGalleryImage(e.target.files[i]);
+                        }
+                        this.value = ''; // Reset file input
+                    }
+                });
+            }
+            
+            // Contact Image Upload - uses 'contact-image-upload-trigger'
+            const contactImageUploadTrigger = document.getElementById('contact-image-upload-trigger');
+            if(contactImageUploadTrigger) {
+                contactImageUploadTrigger.addEventListener('change', function(e) {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('contact-image-preview').src = e.target.result;
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+            }
             
             // Same as phone checkbox for WhatsApp number
             document.getElementById('same-as-phone').addEventListener('change', function() {
