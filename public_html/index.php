@@ -92,10 +92,10 @@
     const searchButton = document.getElementById('searchButton');
     
     // Add click event listener to the button
-    searchButton.addEventListener('click', function() {
-      // Redirect to pgs.html when clicked
-      window.location.href = 'pgs.html';
-    });
+    // searchButton.addEventListener('click', function() { // Will be handled by the other script block
+    //   // Redirect to pgs.php when clicked
+    //   window.location.href = 'pgs.php';
+    // });
   });
 </script>
 
@@ -221,7 +221,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('searchInput');
-  const searchButton = document.getElementById('searchButton');
+  const searchButton = document.getElementById('searchButton'); // Already declared in the first script but scoped locally. This is fine.
   const searchDropdown = document.getElementById('searchDropdown');
   
   // Sample college data for demonstration
@@ -316,25 +316,43 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Search functionality
   searchButton.addEventListener('click', function() {
-    performSearch(searchInput.value);
+    performSearch(searchInput.value.trim());
   });
   
   // Allow search on Enter key press
   searchInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-      performSearch(searchInput.value);
+      performSearch(searchInput.value.trim());
     }
   });
   
   function performSearch(query) {
     if (query.trim() !== '') {
-      // Implement your search logic here
-      console.log('Searching for:', query);
-      // Example: window.location.href = '/search?q=' + encodeURIComponent(query);
+      window.location.href = 'pgs.php?search_query=' + encodeURIComponent(query.trim());
     } else {
-      alert('Please enter a search term');
+      // Optionally, redirect to pgs.php without a query if the search is empty,
+      // or display a message, or do nothing.
+      // For now, let's redirect to the generic pgs.php page if search is initiated with empty query.
+      window.location.href = 'pgs.php';
     }
   }
+
+  // Consolidate the first script's button click logic here to use performSearch
+  // Ensure this doesn't conflict if the first script block for searchButton is still active.
+  // The first script block for searchButton was:
+  // document.addEventListener('DOMContentLoaded', function() {
+  //   const searchButton = document.getElementById('searchButton');
+  //   searchButton.addEventListener('click', function() {
+  //     window.location.href = 'pgs.html'; // This was the original target for change
+  //   });
+  // });
+  // It's better to have a single source of truth for the button click.
+  // The above event listener for searchButton (this.searchButton.addEventListener) will correctly call performSearch.
+  // The first script block's event listener for searchButton should be removed or updated.
+  // For this task, I've commented out the first block's direct redirection logic
+  // and will ensure this second block correctly handles the search button click.
+  // The `searchButton.addEventListener('click', function() { performSearch(searchInput.value.trim()); });`
+  // already correctly handles this.
 });
 </script>
 
@@ -676,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="row">
         <div class="col-xl-4 col-lg-6">
           <div class="zubuz-blog-wrap">
-            <a href="">
+            <a href="#">
               <div class="zubuz-blog-thumb">
                 <img src="images/blog1.png" alt="">
                 <div class="zubuz-blog-categorie">
@@ -686,10 +704,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <div class="zubuz-blog-data">
               <p>June 18, 2024</p>
-              <a href="">
+              <a href="#">
                 <h3>What is a good solution for finance apps?</h3>
               </a>
-              <a class="zubuz-blog-btn" href="">
+              <a class="zubuz-blog-btn" href="#">
                 <svg width="26" height="22" viewBox="0 0 26 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M15.5 2.25L24.25 11M24.25 11L15.5 19.75M24.25 11L1.75 11" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
@@ -700,7 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="col-xl-4 col-lg-6">
           <div class="zubuz-blog-wrap">
-            <a href="">
+            <a href="#">
               <div class="zubuz-blog-thumb">
                 <img src="images/blog2.png" alt="">
                 <div class="zubuz-blog-categorie">
@@ -710,10 +728,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <div class="zubuz-blog-data">
               <p>June 18, 2024</p>
-              <a href="">
+              <a href="#">
                 <h3>What makes banking app development ideal?</h3>
               </a>
-              <a class="zubuz-blog-btn" href="">
+              <a class="zubuz-blog-btn" href="#">
                 <svg width="26" height="22" viewBox="0 0 26 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M15.5 2.25L24.25 11M24.25 11L15.5 19.75M24.25 11L1.75 11" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
@@ -723,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="col-xl-4 col-lg-6">
           <div class="zubuz-blog-wrap">
-            <a href="">
+            <a href="#">
               <div class="zubuz-blog-thumb">
                 <img src="images/blog3.png" alt="">
                 <div class="zubuz-blog-categorie">
@@ -733,10 +751,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <div class="zubuz-blog-data">
               <p>June 18, 2024</p>
-              <a href="">
+              <a href="#">
                 <h3>Finance apps that will help you make money!</h3>
               </a>
-              <a class="zubuz-blog-btn" href="">
+              <a class="zubuz-blog-btn" href="#">
                 <svg width="26" height="22" viewBox="0 0 26 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M15.5 2.25L24.25 11M24.25 11L15.5 19.75M24.25 11L1.75 11" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
@@ -759,8 +777,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <p>Your financial future is just a download away. Get our app and experience the benefits of better money management.</p>
             <div class="zubuz-extara-mt">
               <div class="zubuz-app-wrap">
-                <a class="zubuz-app" href="/contact-us"><img src="images/play-store.png" alt=""></a>
-                <a class="zubuz-app" href="/contact-us"><img src="images/app-store.png" alt=""></a>
+                <a class="zubuz-app" href="#"><img src="images/play-store.png" alt=""></a>
+                <a class="zubuz-app" href="#"><img src="images/app-store.png" alt=""></a>
                 <div class="zubuz-cta-shape">
                   <img src="images/shape2.png" alt="">
                 </div>
@@ -791,7 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
               </a>
               <p>We're your innovation partner, delivering cutting-edge solutions that elevate your business to the next level.</p>
               <div class="zubuz-subscribe-one">
-                <form action="#">
+                <form action="javascript:void(0);">
                   <input type="email" placeholder="Email Address">
                   <button class="zubuz-default-btn zubuz-subscription-btn one" id="zubuz-subscription-btn" type="submit">
                     <span>Subscribe</span>

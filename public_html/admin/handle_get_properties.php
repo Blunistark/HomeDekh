@@ -36,11 +36,14 @@ try {
     $offset = ($page - 1) * $limit;
 
     // 5. Construct SQL Query Dynamically
-    $sql_select = "SELECT p.* "; // Select all from properties, can be specific later
-    $sql_count = "SELECT COUNT(DISTINCT p.id) "; // Count distinct property IDs
+    // Fetch Main Image Path: Modified $sql_select and $sql_joins
+    $sql_select = "SELECT p.*, pi.image_path AS main_image_path ";
+    $sql_count = "SELECT COUNT(DISTINCT p.id) "; 
 
     $sql_from = "FROM properties p ";
-    $sql_joins = "";
+    // Always LEFT JOIN property_images to get the main image if available
+    $sql_joins = "LEFT JOIN property_images pi ON p.id = pi.property_id AND pi.is_thumbnail = TRUE "; 
+    
     $sql_where = "WHERE 1=1 "; // Start WHERE clause
     $params = []; // For prepared statements
     $types = ""; // For prepared statements bind_param types
@@ -104,27 +107,26 @@ try {
     // Amenities (filter by ALL selected)
     if (!empty($amenities_filter)) {
         $num_selected_amenities = count($amenities_filter);
-        $placeholders = implode(',', array_fill(0, $num_selected_amenities, '?'));
+        $num_selected_amenities = count($amenities_filter);
+        $placeholders_amenities_in = implode(',', array_fill(0, $num_selected_amenities, '?'));
 
-        $sql_joins .= "LEFT JOIN property_amenities pa ON p.id = pa.property_id ";
-        // We need to ensure that properties selected have ALL the amenities.
-        // One way is to ensure they are in the list of selected amenities and then count them.
-        $sql_where .= "AND pa.amenity_id IN ($placeholders) ";
-        foreach ($amenities_filter as $amenity_id) {
-            $params[] = $amenity_id;
-            $types .= "i";
-        }
-        // This subquery approach for a direct join might be simpler than GROUP BY in main query for selection part
-        // However, the COUNT query will need the GROUP BY.
-        // For the main selection, we use a subquery to get property IDs that match all amenities
+        // Ensure property_amenities join is only added once if amenities are filtered
+        // The $sql_joins for property_images is already there.
+        // We need to ensure that the property_amenities join is correctly aliased and used.
+        // The current structure might re-add JOINs if not careful.
+        // Let's ensure $sql_joins is built carefully.
+        // $sql_joins already has the property_images join.
+        // Add property_amenities join if not already implicitly part of a more complex structure.
+        // The subquery approach is safer.
+        
         $sql_where .= "AND p.id IN (
             SELECT pa_sub.property_id 
             FROM property_amenities pa_sub 
-            WHERE pa_sub.amenity_id IN ($placeholders)
+            WHERE pa_sub.amenity_id IN ($placeholders_amenities_in)
             GROUP BY pa_sub.property_id 
             HAVING COUNT(DISTINCT pa_sub.amenity_id) = ?
         ) ";
-        // Add params for the subquery's IN clause again
+        // Add params for the subquery's IN clause
         foreach ($amenities_filter as $amenity_id) {
             $params[] = $amenity_id;
             $types .= "i";
@@ -133,44 +135,55 @@ try {
         $params[] = $num_selected_amenities;
         $types .= "i";
     }
-
-
+    
     // Construct full queries
-    $sql_main = $sql_select . $sql_from . $sql_joins . $sql_where . " ORDER BY {$sort_by} {$sort_order} LIMIT ? OFFSET ?";
-    $sql_total_count = $sql_count . $sql_from . $sql_joins . $sql_where;
+    // $sql_joins will contain the LEFT JOIN for property_images and potentially others if added for specific filters.
+    // The property_amenities join for filtering is handled via a subquery in WHERE.
+    $sql_query_base = $sql_from . $sql_joins . $sql_where;
+
+    $sql_main = $sql_select . $sql_query_base . " ORDER BY {$sort_by} {$sort_order} LIMIT ? OFFSET ?";
+    $sql_total_count = $sql_count . $sql_query_base;
 
 
     // 6. Execute Query and Fetch Data
     // Fetch Total Records
     $stmt_count = $conn->prepare($sql_total_count);
     if (!$stmt_count) {
-        throw new Exception("Prepare failed (count): " . $conn->error);
+        // Provide more context for debugging
+        throw new Exception("Prepare failed (count): " . $conn->error . " Query: " . $sql_total_count);
     }
-    if (!empty($types)) { // Bind params if there are any WHERE conditions
-        $stmt_count->bind_param($types, ...$params);
+    // Parameters for count query are the same as for the main query's WHERE part
+    $count_params = $params; 
+    $count_types = $types;
+
+    if (!empty($count_types)) { 
+        $stmt_count->bind_param($count_types, ...$count_params);
     }
     if (!$stmt_count->execute()) {
         throw new Exception("Execute failed (count): " . $stmt_count->error);
     }
     $result_count = $stmt_count->get_result();
-    $total_records = $result_count->fetch_row()[0];
+    $total_records_row = $result_count->fetch_row();
+    $total_records = $total_records_row ? $total_records_row[0] : 0;
     $stmt_count->close();
 
 
     // Fetch Properties for the current page
     $stmt_main = $conn->prepare($sql_main);
     if (!$stmt_main) {
-        throw new Exception("Prepare failed (main): " . $conn->error);
+        throw new Exception("Prepare failed (main): " . $conn->error . " Query: " . $sql_main);
     }
-    $current_params = $params; // Params for the main query
-    $current_types = $types;   // Types for the main query
-    $current_params[] = $limit;
-    $current_types .= "i";
-    $current_params[] = $offset;
-    $current_types .= "i";
+    $main_params = $params; // Params for the main query's WHERE part
+    $main_types = $types;   // Types for the main query's WHERE part
+    
+    // Add LIMIT and OFFSET params for the main query
+    $main_params[] = $limit;
+    $main_types .= "i";
+    $main_params[] = $offset;
+    $main_types .= "i";
 
-    if (!empty($current_types)) {
-        $stmt_main->bind_param($current_types, ...$current_params);
+    if (!empty($main_types)) {
+        $stmt_main->bind_param($main_types, ...$main_params);
     }
     if (!$stmt_main->execute()) {
         throw new Exception("Execute failed (main): " . $stmt_main->error);

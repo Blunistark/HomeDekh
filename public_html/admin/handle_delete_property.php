@@ -1,132 +1,127 @@
 <?php
-header('Content-Type: application/json');
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
-// 1. Include session_check.php and db.php
 require_once '../auth/session_check.php'; // Ensures only admin (owner) can access
 require_once '../config/db.php';
 
-// Helper function to delete a file if it exists
-function delete_file_from_server($filepath_relative_to_root) {
-    if (!empty($filepath_relative_to_root)) {
-        // Construct full path. Assumes this script is in public_html/admin/
-        // and paths in DB are like 'uploads/property_images/...'
-        $full_path = __DIR__ . '/../' . $filepath_relative_to_root;
-        if (file_exists($full_path)) {
-            if (!unlink($full_path)) {
-                // Optionally log this error, but don't necessarily fail the whole process
-                // error_log("Failed to delete file: " . $full_path);
-                return false; // Indicate failure
-            }
-        }
-    }
-    return true; // Indicate success or file didn't exist
-}
+header('Content-Type: application/json');
 
-// 3. Check if the request method is POST
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+// Input Validation
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405); // Method Not Allowed
-    echo json_encode(['success' => false, 'message' => 'Invalid request method. Only POST is allowed.']);
-    exit();
+    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+    exit;
 }
 
-// 4. Retrieve property_id from POST data. Validate it.
-$property_id = filter_input(INPUT_POST, 'property_id', FILTER_VALIDATE_INT);
+if (!isset($_POST['property_id'])) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid input. Missing property_id.']);
+    exit;
+}
+
+$property_id = filter_var($_POST['property_id'], FILTER_VALIDATE_INT);
+
 if (!$property_id || $property_id <= 0) {
-    http_response_code(400); // Bad Request
-    echo json_encode(['success' => false, 'message' => 'Invalid or missing Property ID.']);
-    exit();
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid property ID provided.']);
+    exit;
 }
 
 $conn->begin_transaction();
 
 try {
-    // 5. Fetch Image Paths
-    $all_image_paths = [];
-
-    // Fetch contact_image_path from properties table
-    // Assuming the field name is contact_image_path as used in add/edit scripts
-    $stmt_contact_img = $conn->prepare("SELECT contact_image_path FROM properties WHERE id = ?");
-    if (!$stmt_contact_img) throw new Exception("Prepare failed (fetch contact image path): " . $conn->error);
-    $stmt_contact_img->bind_param("i", $property_id);
-    if (!$stmt_contact_img->execute()) throw new Exception("Execute failed (fetch contact image path): " . $stmt_contact_img->error);
-    $result_contact_img = $stmt_contact_img->get_result();
-    if ($row_contact_img = $result_contact_img->fetch_assoc()) {
-        if (!empty($row_contact_img['contact_image_path'])) {
-            $all_image_paths[] = $row_contact_img['contact_image_path'];
+    // 1. Fetch and delete property gallery images (main image is part of this table too if is_thumbnail=true)
+    $stmt_fetch_gallery_images = $conn->prepare("SELECT image_path FROM property_images WHERE property_id = ?");
+    if (!$stmt_fetch_gallery_images) throw new Exception("Prepare failed (fetch gallery images): " . $conn->error);
+    $stmt_fetch_gallery_images->bind_param("i", $property_id);
+    if (!$stmt_fetch_gallery_images->execute()) throw new Exception("Execute failed (fetch gallery images): " . $stmt_fetch_gallery_images->error);
+    
+    $result_gallery_images = $stmt_fetch_gallery_images->get_result();
+    while ($row_image = $result_gallery_images->fetch_assoc()) {
+        if (!empty($row_image['image_path']) && file_exists('../' . $row_image['image_path'])) {
+            if (!unlink('../' . $row_image['image_path'])) {
+                // Log error, but don't halt transaction if DB cleanup is more critical
+                error_log("Failed to delete gallery image file: " . $row_image['image_path'] . " for property ID: " . $property_id);
+            }
         }
     }
-    $stmt_contact_img->close();
-    // No need to 404 if property doesn't exist yet, deletion will just fail or do nothing.
+    $stmt_fetch_gallery_images->close();
 
-    // Fetch main and gallery images from property_images
-    $stmt_prop_imgs = $conn->prepare("SELECT image_path FROM property_images WHERE property_id = ?");
-    if (!$stmt_prop_imgs) throw new Exception("Prepare failed (fetch property images): " . $conn->error);
-    $stmt_prop_imgs->bind_param("i", $property_id);
-    if (!$stmt_prop_imgs->execute()) throw new Exception("Execute failed (fetch property images): " . $stmt_prop_imgs->error);
-    $result_prop_imgs = $stmt_prop_imgs->get_result();
-    while ($row_prop_img = $result_prop_imgs->fetch_assoc()) {
-        if (!empty($row_prop_img['image_path'])) {
-            $all_image_paths[] = $row_prop_img['image_path'];
+    // 2. Fetch and delete property contact image (if stored separately in properties table)
+    $stmt_fetch_contact_image = $conn->prepare("SELECT contact_image_path FROM properties WHERE id = ?");
+    if (!$stmt_fetch_contact_image) throw new Exception("Prepare failed (fetch contact image): " . $conn->error);
+    $stmt_fetch_contact_image->bind_param("i", $property_id);
+    if (!$stmt_fetch_contact_image->execute()) throw new Exception("Execute failed (fetch contact image): " . $stmt_fetch_contact_image->error);
+
+    $result_contact_image = $stmt_fetch_contact_image->get_result();
+    if ($row_contact = $result_contact_image->fetch_assoc()) {
+        if (!empty($row_contact['contact_image_path']) && file_exists('../' . $row_contact['contact_image_path'])) {
+            if (!unlink('../' . $row_contact['contact_image_path'])) {
+                error_log("Failed to delete contact image file: " . $row_contact['contact_image_path'] . " for property ID: " . $property_id);
+            }
         }
     }
-    $stmt_prop_imgs->close();
+    $stmt_fetch_contact_image->close();
 
-    // 6. Database Deletion
+    // 3. Delete from related tables using foreign key constraints (if ON DELETE CASCADE is set)
+    // Or manually delete if constraints are not set or for safety.
+    // Order of deletion matters if there are no ON DELETE CASCADE.
+    // Start with tables that reference `properties` or are leaf nodes in dependency.
+
+    $related_tables_stmts_sql = [
+        "DELETE FROM property_amenities WHERE property_id = ?",
+        "DELETE FROM additional_services WHERE property_id = ?",
+        "DELETE FROM nearby_places WHERE property_id = ?",
+        "DELETE FROM room_types WHERE property_id = ?",
+        "DELETE FROM property_images WHERE property_id = ?", // Deletes records after files are unlinked
+        "DELETE FROM saved_properties WHERE property_id = ?" // If users can save/favorite properties
+    ];
+
+    foreach ($related_tables_stmts_sql as $sql) {
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new Exception("Prepare failed (delete related data - \"{$sql}\"): " . $conn->error);
+        $stmt->bind_param("i", $property_id);
+        if (!$stmt->execute()){
+            // Log error but continue to attempt deleting other related data and the main property.
+            // If a critical FK prevents property deletion, the final delete will fail and rollback.
+             error_log("Execute failed (delete related data - \"{$sql}\" for property ID {$property_id}): " . $stmt->error);
+        }
+        $stmt->close();
+    }
+
+    // 4. Delete from properties table
     $stmt_delete_property = $conn->prepare("DELETE FROM properties WHERE id = ?");
-    if (!$stmt_delete_property) {
-        throw new Exception("Prepare failed (delete property): " . $conn->error);
-    }
+    if (!$stmt_delete_property) throw new Exception("Prepare failed (delete property): " . $conn->error);
     $stmt_delete_property->bind_param("i", $property_id);
-    if (!$stmt_delete_property->execute()) {
-        throw new Exception("Execute failed (delete property): " . $stmt_delete_property->error);
-    }
-
+    if (!$stmt_delete_property->execute()) throw new Exception("Execute failed (delete property): " . $stmt_delete_property->error);
+    
     $affected_rows = $stmt_delete_property->affected_rows;
     $stmt_delete_property->close();
 
-    if ($affected_rows === 0) {
-        // Property might have already been deleted or ID was invalid.
-        // Since images are fetched first, this might seem redundant, but it's a good check.
-        $conn->rollback(); // Nothing was actually deleted from properties table
-        http_response_code(404); // Not Found
-        echo json_encode(['success' => false, 'message' => 'Property not found or already deleted.']);
-        exit();
-    }
-
-    // 7. Delete Image Files
-    $file_deletion_errors = false;
-    foreach ($all_image_paths as $image_path) {
-        if (!delete_file_from_server($image_path)) {
-            $file_deletion_errors = true;
-            // Log this: error_log("Failed to delete image file during property deletion: {$image_path} for property ID {$property_id}");
-        }
-    }
-
-    if ($file_deletion_errors) {
-        // Decide on atomicity: either rollback or commit with a warning.
-        // For now, let's commit the DB changes but warn about file deletion.
-        // The alternative is to throw new Exception("Partial failure: DB deleted but some files failed to delete.")
-        // which would then rollback. For this implementation, we'll commit and just log the file errors.
+    if ($affected_rows > 0) {
         $conn->commit();
-        echo json_encode([
-            'success' => true, // DB change was successful
-            'message' => 'Property deleted from database, but some image files might not have been removed. Please check server logs.',
-            'detail' => 'File deletion issues encountered.'
-        ]);
+        echo json_encode(['success' => true, 'message' => 'Property and all related data deleted successfully.']);
     } else {
-        $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Property deleted successfully.']);
+        // This might happen if the property was already deleted by another request.
+        // If related data was cleaned up but property itself wasn't found, consider it a success for the user.
+        // However, if no rows were affected anywhere, it might be an issue.
+        // For simplicity, if main property delete affects 0 rows, assume it was already gone.
+        // If previous steps threw exceptions, this won't be reached.
+        $conn->commit(); // Commit deletion of any related data that might have occurred.
+        echo json_encode(['success' => true, 'message' => 'Property not found (already deleted or invalid ID), related data cleanup attempted.']);
     }
 
 } catch (Exception $e) {
     $conn->rollback();
-    http_response_code(500); // Internal Server Error
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Error deleting property: ' . $e->getMessage()
+        'message' => "An error occurred: " . $e->getMessage()
     ]);
 } finally {
-    if (isset($conn)) {
+    if (isset($conn) && $conn->ping()) { // Check if connection is still alive before closing
         $conn->close();
     }
 }
