@@ -1,14 +1,9 @@
--- Create the database
-CREATE DATABASE IF NOT EXISTS `homedhek_db`;
-
--- Use the database
-USE `homedhek_db`;
 
 -- Table structure for table `users`
 CREATE TABLE IF NOT EXISTS `users` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL,
-  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `email` VARCHAR(191) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
   `phone` VARCHAR(20),
   `address` TEXT,
@@ -43,9 +38,9 @@ CREATE TABLE IF NOT EXISTS `property_images` (
 CREATE TABLE IF NOT EXISTS `room_types` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `property_id` INT NOT NULL,
-  `name` VARCHAR(255) NOT NULL, -- e.g., 'Single Room', 'Double Room', 'Apartment'
+  `name` VARCHAR(255) NOT NULL,
   `price_per_night` DECIMAL(10, 2) NOT NULL,
-  `capacity` INT NOT NULL, -- Number of people it can accommodate
+  `capacity` INT NOT NULL,
   `description` TEXT,
   FOREIGN KEY (`property_id`) REFERENCES `properties`(`id`) ON DELETE CASCADE
 );
@@ -53,8 +48,8 @@ CREATE TABLE IF NOT EXISTS `room_types` (
 -- Table structure for table `amenities`
 CREATE TABLE IF NOT EXISTS `amenities` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(255) NOT NULL UNIQUE,
-  `icon_class` VARCHAR(255) -- For Font Awesome or similar icon libraries
+  `name` VARCHAR(191) NOT NULL UNIQUE,
+  `icon_class` VARCHAR(255)
 );
 
 -- Pre-populate amenities table
@@ -73,7 +68,6 @@ INSERT INTO `amenities` (`name`, `icon_class`) VALUES
 ('Power Backup', 'fas fa-bolt');
 
 -- Table structure for table `property_amenities`
--- (Junction table for many-to-many relationship between properties and amenities)
 CREATE TABLE IF NOT EXISTS `property_amenities` (
   `property_id` INT NOT NULL,
   `amenity_id` INT NOT NULL,
@@ -97,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `nearby_places` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `property_id` INT NOT NULL,
   `name` VARCHAR(255) NOT NULL,
-  `type` VARCHAR(100), -- e.g., 'Restaurant', 'Hospital', 'School', 'Bus Stop'
+  `type` VARCHAR(100),
   `distance_km` DECIMAL(5, 2),
   FOREIGN KEY (`property_id`) REFERENCES `properties`(`id`) ON DELETE CASCADE
 );

@@ -159,31 +159,42 @@ try {
         throw new Exception(implode("<br>", $errors));
     }
 
+    // Insert into properties (core info only)
     $sql_insert_property = "INSERT INTO properties (
             owner_id, name, address, latitude, longitude, description, status,
-            property_type, short_description, meta_description, landmark, distance,
-            contact_name, contact_phone, contact_email, contact_image_path,
-            has_special_offer, special_offer_text,
-            property_category, property_rating, property_reviewcount, base_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    // Types: i, s, s, d, d, s, s,   s, s, s, s, d,   s, s, s, s,   i, s,   s, d, i, d
-    // Total 22 fields
-
+            property_type, short_description, meta_description, property_category, base_price
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt_insert_property = $conn->prepare($sql_insert_property);
     if (!$stmt_insert_property) throw new Exception("Prepare failed (properties): " . $conn->error);
-
     $stmt_insert_property->bind_param(
-        "issddsssssdsssssisdsid", // Corrected types string
+        "issddssssssd",
         $owner_id, $property_name, $address, $map_latitude, $map_longitude, $db_description, $final_db_status,
-        $property_type, $short_description, $meta_description, $landmark, $distance,
-        $contact_name, $contact_phone, $contact_email, $contact_image_path,
-        $has_special_offer, $special_offer_text,
-        $property_category, $property_rating, $property_reviewcount, $base_price
+        $property_type, $short_description, $meta_description, $property_category, $base_price
     );
-
     if (!$stmt_insert_property->execute()) throw new Exception("Execute failed (properties): " . $stmt_insert_property->error);
     $property_id = $conn->insert_id;
     $stmt_insert_property->close();
+    // Insert into property_contacts
+    $sql_insert_contact = "INSERT INTO property_contacts (property_id, contact_name, contact_phone, contact_email, contact_image_path) VALUES (?, ?, ?, ?, ?)";
+    $stmt_insert_contact = $conn->prepare($sql_insert_contact);
+    if (!$stmt_insert_contact) throw new Exception("Prepare failed (property_contacts): " . $conn->error);
+    $stmt_insert_contact->bind_param("issss", $property_id, $contact_name, $contact_phone, $contact_email, $contact_image_path);
+    if (!$stmt_insert_contact->execute()) throw new Exception("Execute failed (property_contacts): " . $stmt_insert_contact->error);
+    $stmt_insert_contact->close();
+    // Insert into property_special_offers
+    $sql_insert_offer = "INSERT INTO property_special_offers (property_id, has_special_offer, special_offer_text) VALUES (?, ?, ?)";
+    $stmt_insert_offer = $conn->prepare($sql_insert_offer);
+    if (!$stmt_insert_offer) throw new Exception("Prepare failed (property_special_offers): " . $conn->error);
+    $stmt_insert_offer->bind_param("iis", $property_id, $has_special_offer, $special_offer_text);
+    if (!$stmt_insert_offer->execute()) throw new Exception("Execute failed (property_special_offers): " . $stmt_insert_offer->error);
+    $stmt_insert_offer->close();
+    // Insert into property_reviews (initial values)
+    $sql_insert_review = "INSERT INTO property_reviews (property_id, rating, review_count) VALUES (?, ?, ?)";
+    $stmt_insert_review = $conn->prepare($sql_insert_review);
+    if (!$stmt_insert_review) throw new Exception("Prepare failed (property_reviews): " . $conn->error);
+    $stmt_insert_review->bind_param("idi", $property_id, $property_rating, $property_reviewcount);
+    if (!$stmt_insert_review->execute()) throw new Exception("Execute failed (property_reviews): " . $stmt_insert_review->error);
+    $stmt_insert_review->close();
 
     if ($main_image_path) {
         $stmt_insert_main_image = $conn->prepare("INSERT INTO property_images (property_id, image_path, is_thumbnail) VALUES (?, ?, TRUE)");

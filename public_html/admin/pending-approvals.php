@@ -1,3 +1,25 @@
+<?php
+require_once '../config/db.php'; // Adjust path if needed
+// Fetch properties with status 'unavailable' (pending review)
+$sql = "SELECT p.*, u.name AS owner_name, u.role AS owner_role, u.phone AS owner_phone
+        FROM properties p
+        LEFT JOIN users u ON p.owner_id = u.id
+        WHERE p.status = 'unavailable'
+        ORDER BY p.created_at DESC";
+$result = $conn->query($sql);
+$pending_properties = [];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $pending_properties[] = $row;
+    }
+}
+// Dynamic statistics
+$pending_review_count = $conn->query("SELECT COUNT(*) FROM properties WHERE status='unavailable'")->fetch_row()[0] ?? 0;
+$changes_requested_count = $conn->query("SELECT COUNT(*) FROM properties WHERE status='changes_requested'")->fetch_row()[0] ?? 0;
+$rejected_count = $conn->query("SELECT COUNT(*) FROM properties WHERE status='rejected'")->fetch_row()[0] ?? 0;
+$approved_today_count = $conn->query("SELECT COUNT(*) FROM properties WHERE status='available' AND DATE(created_at) = CURDATE()")?->fetch_row()[0] ?? 0;
+$sidebar_badge_count = $pending_review_count + $changes_requested_count;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,7 +120,7 @@
                             <a href="pending-approvals.php" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md bg-blue-50 text-[#1a4977]">
                                 <i class="fas fa-clock mr-3 text-[#1a4977]"></i>
                                 Pending Approvals
-                                <span class="ml-auto bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">3</span>
+                                <span class="ml-auto bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full"><?php echo $sidebar_badge_count; ?></span>
                             </a>
                             <a href="export-data.php" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
                                 <i class="fas fa-download mr-3 text-gray-500"></i>
@@ -158,7 +180,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Pending Review</p>
-                            <p class="text-2xl font-semibold">3</p>
+                            <p class="text-2xl font-semibold"><?php echo $pending_review_count; ?></p>
                         </div>
                     </div>
                     
@@ -168,7 +190,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Changes Requested</p>
-                            <p class="text-2xl font-semibold">2</p>
+                            <p class="text-2xl font-semibold"><?php echo $changes_requested_count; ?></p>
                         </div>
                     </div>
                     
@@ -178,7 +200,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Approved Today</p>
-                            <p class="text-2xl font-semibold">5</p>
+                            <p class="text-2xl font-semibold"><?php echo $approved_today_count; ?></p>
                         </div>
                     </div>
                     
@@ -188,7 +210,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Rejected</p>
-                            <p class="text-2xl font-semibold">1</p>
+                            <p class="text-2xl font-semibold"><?php echo $rejected_count; ?></p>
                         </div>
                     </div>
                 </div>
@@ -217,161 +239,59 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Property 1 -->
-                                <tr class="hover:bg-gray-50 cursor-pointer property-row" data-id="1">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md mr-4">
-                                                <img src="https://via.placeholder.com/150?text=PG" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Sunshine PG for Girls</div>
-                                                <div class="text-sm text-gray-500">HSR Layout, Bangalore</div>
-                                                <div class="flex items-center mt-1">
-                                                    <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 text-xs mr-2">PG</span>
-                                                    <span class="px-2 py-0.5 rounded bg-pink-100 text-pink-800 text-xs">Girls</span>
+                                <?php foreach (
+                                    $pending_properties as $property): ?>
+                                    <tr class="hover:bg-gray-50 cursor-pointer property-row" data-id="<?= $property['id'] ?>">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md mr-4">
+                                                    <img src="<?= htmlspecialchars($property['contact_image_path'] ?: 'https://via.placeholder.com/150?text=PG') ?>" alt="Property" class="h-full w-full object-cover">
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($property['name']) ?></div>
+                                                    <div class="text-sm text-gray-500"><?= htmlspecialchars($property['address']) ?></div>
+                                                    <div class="flex items-center mt-1">
+                                                        <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 text-xs mr-2"><?= htmlspecialchars($property['property_type']) ?></span>
+                                                        <span class="px-2 py-0.5 rounded bg-pink-100 text-pink-800 text-xs"><?= htmlspecialchars($property['property_category']) ?></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full overflow-hidden mr-3">
-                                                <img src="https://via.placeholder.com/150?text=A" alt="Owner" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Ananya Sharma</div>
-                                                <div class="text-sm text-gray-500">Property Owner</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending Review
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div>May 16, 2025</div>
-                                        <div class="text-xs text-gray-400">2 days ago</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="review-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="1">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="approve-btn text-green-600 hover:text-green-800" data-id="1">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="reject-btn text-red-600 hover:text-red-800" data-id="1">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Property 2 -->
-                                <tr class="hover:bg-gray-50 cursor-pointer property-row" data-id="2">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md mr-4">
-                                                <img src="https://via.placeholder.com/150?text=Hostel" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Student Haven Hostel</div>
-                                                <div class="text-sm text-gray-500">Koramangala, Bangalore</div>
-                                                <div class="flex items-center mt-1">
-                                                    <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 text-xs mr-2">Hostel</span>
-                                                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">Boys</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-8 w-8 rounded-full overflow-hidden mr-3">
+                                                    <img src="https://via.placeholder.com/150?text=A" alt="Owner" class="h-full w-full object-cover">
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($property['owner_name']) ?></div>
+                                                    <div class="text-sm text-gray-500"><?= htmlspecialchars($property['owner_role']) ?></div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full overflow-hidden mr-3">
-                                                <img src="https://via.placeholder.com/150?text=R" alt="Owner" class="h-full w-full object-cover">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                Pending Review
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div><?= date('M d, Y', strtotime($property['created_at'])) ?></div>
+                                            <div class="text-xs text-gray-400"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div class="flex justify-end space-x-2">
+                                                <button class="review-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="<?= $property['id'] ?>">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="approve-btn text-green-600 hover:text-green-800" data-id="<?= $property['id'] ?>">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="reject-btn text-red-600 hover:text-red-800" data-id="<?= $property['id'] ?>">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
                                             </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Rahul Patel</div>
-                                                <div class="text-sm text-gray-500">Property Manager</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Changes Requested
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div>May 14, 2025</div>
-                                        <div class="text-xs text-gray-400">4 days ago</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="review-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="2">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="approve-btn text-green-600 hover:text-green-800" data-id="2">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="reject-btn text-red-600 hover:text-red-800" data-id="2">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Property 3 -->
-                                <tr class="hover:bg-gray-50 cursor-pointer property-row" data-id="3">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md mr-4">
-                                                <img src="https://via.placeholder.com/150?text=Apt" alt="Property" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Urban Co-Living Spaces</div>
-                                                <div class="text-sm text-gray-500">Indiranagar, Bangalore</div>
-                                                <div class="flex items-center mt-1">
-                                                    <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 text-xs mr-2">Apartment</span>
-                                                    <span class="px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Co-ed</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full overflow-hidden mr-3">
-                                                <img src="https://via.placeholder.com/150?text=P" alt="Owner" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Priya Mehta</div>
-                                                <div class="text-sm text-gray-500">Property Agent</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending Review
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div>May 17, 2025</div>
-                                        <div class="text-xs text-gray-400">Yesterday</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="review-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="3">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="approve-btn text-green-600 hover:text-green-800" data-id="3">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="reject-btn text-red-600 hover:text-red-800" data-id="3">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -697,95 +617,79 @@
                 }
             });
             
-            // Function to open property modal
+            // Pass PHP data to JS
+            const properties = <?= json_encode($pending_properties) ?>;
+            // Modal logic using real data
             function openPropertyModal(propertyId) {
-                // In a real app, you would fetch the property details via AJAX
-                // For now, we'll simulate with different data based on propertyId
-                
-                // Set the property ID on the modal
-                propertyReviewModal.setAttribute('data-property-id', propertyId);
-                
-                // Display the modal
-                propertyReviewModal.classList.remove('hidden');
-                
-                // Simulate data loading for different properties
-                updatePropertyModalData(propertyId);
+                const property = properties.find(p => p.id == propertyId);
+                if (!property) return;
+                document.getElementById('modal-property-name').textContent = property.name;
+                document.getElementById('modal-property-location').textContent = property.address;
+                document.getElementById('modal-property-status').textContent = 'Pending Review';
+                document.getElementById('modal-property-type').textContent = property.property_type;
+                document.getElementById('modal-property-category').textContent = property.property_category;
+                document.getElementById('modal-property-price').textContent = '₹' + (property.base_price || property.price_per_month) + '/month';
+                document.getElementById('modal-submission-date').textContent = property.created_at ? property.created_at.split(' ')[0] : '';
+                document.getElementById('modal-property-description').textContent = property.description;
+                document.getElementById('modal-owner-name').textContent = property.owner_name;
+                document.getElementById('modal-owner-role').textContent = property.owner_role;
+                document.getElementById('modal-owner-phone').textContent = property.owner_phone;
+                document.getElementById('property-review-modal').classList.remove('hidden');
+                document.getElementById('property-review-modal').setAttribute('data-property-id', propertyId);
+            }
+            // Approve/Reject/Request Changes with AJAX
+            function approveProperty(propertyId) {
+                fetch('property_action.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'action=approve&id=' + encodeURIComponent(propertyId)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Property approved!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+            }
+            function rejectProperty(propertyId, feedback) {
+                fetch('property_action.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'action=reject&id=' + encodeURIComponent(propertyId) + '&feedback=' + encodeURIComponent(feedback)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Property rejected!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+            }
+            function requestChanges(propertyId, feedback) {
+                fetch('property_action.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'action=request-changes&id=' + encodeURIComponent(propertyId) + '&feedback=' + encodeURIComponent(feedback)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Requested changes for property!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
             }
             
             // Function to close property modal
             function closePropertyModal() {
                 propertyReviewModal.classList.add('hidden');
-            }
-            
-            // Function to update modal data based on propertyId
-            function updatePropertyModalData(propertyId) {
-                const propertyData = {
-                    '1': {
-                        name: 'Sunshine PG for Girls',
-                        location: 'HSR Layout, Bangalore',
-                        status: 'Pending Review',
-                        type: 'PG',
-                        category: 'Girls Only',
-                        price: '₹12,000/month',
-                        date: 'May 16, 2025',
-                        description: 'Sunshine PG for Girls offers comfortable accommodation for female students and working professionals in the heart of HSR Layout. With fully furnished rooms, high-speed internet, and nutritious home-cooked meals, we provide a safe and supportive environment. Our facility includes 24/7 security, power backup, and regular housekeeping services.',
-                        ownerName: 'Ananya Sharma',
-                        ownerRole: 'Property Owner',
-                        ownerPhone: '+91 9876543210'
-                    },
-                    '2': {
-                        name: 'Student Haven Hostel',
-                        location: 'Koramangala, Bangalore',
-                        status: 'Changes Requested',
-                        type: 'Hostel',
-                        category: 'Boys Only',
-                        price: '₹10,000/month',
-                        date: 'May 14, 2025',
-                        description: 'Student Haven Hostel is designed for male students pursuing higher education in Bangalore. Located in the vibrant neighborhood of Koramangala, our hostel provides easy access to major educational institutions and tech parks. We offer comfortable accommodation with study areas, recreational facilities, and nutritious meals.',
-                        ownerName: 'Rahul Patel',
-                        ownerRole: 'Property Manager',
-                        ownerPhone: '+91 9876543211'
-                    },
-                    '3': {
-                        name: 'Urban Co-Living Spaces',
-                        location: 'Indiranagar, Bangalore',
-                        status: 'Pending Review',
-                        type: 'Apartment',
-                        category: 'Co-ed',
-                        price: '₹15,000/month',
-                        date: 'May 17, 2025',
-                        description: 'Urban Co-Living Spaces offers modern, fully-furnished apartments for young professionals and students in the trendy locality of Indiranagar. Our co-ed living spaces combine private bedrooms with shared common areas, creating a balance between privacy and community. Enjoy high-speed WiFi, regular housekeeping, and community events.',
-                        ownerName: 'Priya Mehta',
-                        ownerRole: 'Property Agent',
-                        ownerPhone: '+91 9876543212'
-                    }
-                };
-                
-                const data = propertyData[propertyId];
-                
-                // Update modal content
-                document.getElementById('modal-property-name').textContent = data.name;
-                document.getElementById('modal-property-location').textContent = data.location;
-                document.getElementById('modal-property-status').textContent = data.status;
-                document.getElementById('modal-property-type').textContent = data.type;
-                document.getElementById('modal-property-category').textContent = data.category;
-                document.getElementById('modal-property-price').textContent = data.price;
-                document.getElementById('modal-submission-date').textContent = data.date;
-                document.getElementById('modal-property-description').textContent = data.description;
-                document.getElementById('modal-owner-name').textContent = data.ownerName;
-                document.getElementById('modal-owner-role').textContent = data.ownerRole;
-                document.getElementById('modal-owner-phone').textContent = data.ownerPhone;
-                
-                // Update status class
-                const statusElement = document.getElementById('modal-property-status');
-                statusElement.className = '';
-                if (data.status === 'Pending Review') {
-                    statusElement.classList.add('px-2', 'py-1', 'inline-flex', 'text-xs', 'leading-5', 'font-semibold', 'rounded-full', 'bg-yellow-100', 'text-yellow-800');
-                } else if (data.status === 'Changes Requested') {
-                    statusElement.classList.add('px-2', 'py-1', 'inline-flex', 'text-xs', 'leading-5', 'font-semibold', 'rounded-full', 'bg-blue-100', 'text-blue-800');
-                }
-                
-                // For a real app, you would also update images, rooms, and amenities dynamically
             }
             
             // Function to open feedback modal
@@ -819,69 +723,6 @@
             // Function to close feedback modal
             function closeFeedbackModal() {
                 feedbackModal.classList.add('hidden');
-            }
-            
-            // Function to approve property
-            function approveProperty(propertyId) {
-                // In a real app, you would send an AJAX request to approve the property
-                
-                // For demo purposes, show an alert and remove the property row
-                alert(`Property #${propertyId} has been approved and published`);
-                
-                // Close modals
-                closePropertyModal();
-                
-                // Remove the property row from the table
-                const propertyRow = document.querySelector(`.property-row[data-id="${propertyId}"]`);
-                propertyRow.remove();
-                
-                // Update counts
-                updateCounts();
-                
-                // Check if there are any properties left
-                checkEmptyState();
-            }
-            
-            // Function to reject property
-            function rejectProperty(propertyId, feedback) {
-                // In a real app, you would send an AJAX request to reject the property
-                
-                // For demo purposes, show an alert and remove the property row
-                alert(`Property #${propertyId} has been rejected. Feedback: ${feedback}`);
-                
-                // Close modals
-                closeFeedbackModal();
-                closePropertyModal();
-                
-                // Remove the property row from the table
-                const propertyRow = document.querySelector(`.property-row[data-id="${propertyId}"]`);
-                propertyRow.remove();
-                
-                // Update counts
-                updateCounts();
-                
-                // Check if there are any properties left
-                checkEmptyState();
-            }
-            
-            // Function to request changes
-            function requestChanges(propertyId, feedback) {
-                // In a real app, you would send an AJAX request to request changes
-                
-                // For demo purposes, show an alert and update the property status
-                alert(`Requested changes for Property #${propertyId}. Feedback: ${feedback}`);
-                
-                // Close modals
-                closeFeedbackModal();
-                closePropertyModal();
-                
-                // Update property status in the table
-                const statusCell = document.querySelector(`.property-row[data-id="${propertyId}"] td:nth-child(3) span`);
-                statusCell.textContent = 'Changes Requested';
-                statusCell.className = 'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800';
-                
-                // Update counts
-                updateCounts();
             }
             
             // Function to update counts
@@ -919,11 +760,12 @@
                 }
             }
             
-            // Utility function to check if element contains text
-            // This is needed because :contains is not standard
-            jQuery.expr[':'].contains = function(a, i, m) {
-                return jQuery(a).text().indexOf(m[3]) >= 0;
-            };
+            // Replace placeholder.com images with local images
+            document.querySelectorAll('img').forEach(img => {
+                if (img.src.includes('via.placeholder.com')) {
+                    img.src = 'images/default-avatar.png';
+                }
+            });
         });
     </script>
 </body>

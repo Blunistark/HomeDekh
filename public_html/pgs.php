@@ -1,5 +1,5 @@
 <?php
-require_once '../config/db.php'; // Step 1: Include Database Connection
+require_once 'config/db.php'; // Corrected path for Database Connection
 
 // Step 2: Fetch Properties from Database
 $properties = [];
@@ -56,10 +56,30 @@ foreach($selected_amenities_raw as $amenity_val) {
     $selected_amenities[] = trim(htmlspecialchars($amenity_val));
 }
 
+// Fetch all amenities for filter sidebar
+$all_amenities = [];
+$amenities_sql = "SELECT name FROM amenities ORDER BY name ASC";
+$amenities_result = $conn->query($amenities_sql);
+if ($amenities_result) {
+    while ($row = $amenities_result->fetch_assoc()) {
+        $all_amenities[] = $row['name'];
+    }
+}
+
+// Get user location from URL if provided
+$user_lat = isset($_GET['lat']) ? floatval($_GET['lat']) : null;
+$user_lng = isset($_GET['lng']) ? floatval($_GET['lng']) : null;
+
 // Base SQL parts
-$sql_select_main = "SELECT p.id, p.name, p.property_category, p.landmark, p.address, p.base_price, p.property_rating, p.status, pi.image_path AS main_image_path";
-$sql_select_count = "SELECT COUNT(DISTINCT p.id) as total";
-$sql_from_joins = "FROM properties p LEFT JOIN property_images pi ON p.id = pi.property_id AND pi.is_thumbnail = TRUE";
+if ($user_lat !== null && $user_lng !== null) {
+    $sql_select_main = "SELECT p.id, p.name, p.property_category, p.landmark, p.address, p.base_price, p.property_rating, p.status, pi.image_path AS main_image_path, p.latitude, p.longitude, (6371 * acos(cos(radians(?)) * cos(radians(p.latitude)) * cos(radians(p.longitude) - radians(?)) + sin(radians(?)) * sin(radians(p.latitude)))) AS distance";
+    $sql_select_count = "SELECT COUNT(DISTINCT p.id) as total";
+    $sql_from_joins = "FROM properties p LEFT JOIN property_images pi ON p.id = pi.property_id AND pi.is_thumbnail = TRUE";
+} else {
+    $sql_select_main = "SELECT p.id, p.name, p.property_category, p.landmark, p.address, p.base_price, p.property_rating, p.status, pi.image_path AS main_image_path, p.latitude, p.longitude";
+    $sql_select_count = "SELECT COUNT(DISTINCT p.id) as total";
+    $sql_from_joins = "FROM properties p LEFT JOIN property_images pi ON p.id = pi.property_id AND pi.is_thumbnail = TRUE";
+}
 
 // WHERE clauses and parameters will be the same for both main query and count query
 $where_clauses = ["p.status = 'active'"];
@@ -149,8 +169,12 @@ if ($current_page > $total_pages && $total_pages > 0) { // If current page is ou
 
 
 // --- Fetch Paginated Properties ---
-$sql_main_query = $sql_select_main . " " . $sql_from_joins . $sql_where_clause;
-$sql_main_query .= " ORDER BY p.created_at DESC LIMIT ? OFFSET ?";
+$sql_main_query = "";
+if ($user_lat !== null && $user_lng !== null) {
+    $sql_main_query = $sql_select_main . " " . $sql_from_joins . $sql_where_clause . " ORDER BY distance ASC LIMIT ? OFFSET ?";
+} else {
+    $sql_main_query = $sql_select_main . " " . $sql_from_joins . $sql_where_clause . " ORDER BY p.created_at DESC LIMIT ? OFFSET ?";
+}
 
 // Add pagination params to a new array to avoid modifying $query_params used by count
 $main_query_params = $query_params; // Copy filter/search params
@@ -160,6 +184,12 @@ $main_query_params[] = $results_per_page;
 $main_query_types .= 'i';
 $main_query_params[] = $offset;
 $main_query_types .= 'i';
+
+// Bind lat/lng if present
+if ($user_lat !== null && $user_lng !== null) {
+    array_unshift($main_query_params, $user_lat, $user_lng, $user_lat);
+    $main_query_types = str_repeat('d', 3) . $main_query_types;
+}
 
 $stmt_main = $conn->prepare($sql_main_query);
 if ($stmt_main) {
@@ -189,6 +219,21 @@ $page_subtitle = $search_query_display ? "Results for \"{$search_query_display}\
 
 // Update results count text to use $total_properties
 $results_count_text = $total_properties . ($total_properties == 1 ? " Result Found" : " Results Found");
+
+// For each property, fetch top 3 amenities
+function get_property_amenities($conn, $property_id, $limit = 3) {
+    $sql = "SELECT a.name FROM property_amenities pa JOIN amenities a ON pa.amenity_id = a.id WHERE pa.property_id = ? LIMIT ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $property_id, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $amenities = [];
+    while ($row = $result->fetch_assoc()) {
+        $amenities[] = $row['name'];
+    }
+    $stmt->close();
+    return $amenities;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -198,8 +243,11 @@ $results_count_text = $total_properties . ($total_properties == 1 ? " Result Fou
     <title>College Accommodation Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Leaflet CSS/JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body class="bg-white font-[Inter]">
     <!-- App Container -->
@@ -212,10 +260,30 @@ $results_count_text = $total_properties . ($total_properties == 1 ? " Result Fou
                         <span class="text-[#1a4977] font-bold text-xl"><a href="./" class="text-[#1a4977] font-bold text-xl">HomeDhek</a></span>
                     </div>
                     <div class="hidden md:flex items-center space-x-4">
-                        <a href="./" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Home</a>
+                        <a href="index.php" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Home</a>
                         <a href="pgs.php" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">View All PGS</a>
                         <a href="saved.php" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Saved</a>
-                                  <button class="bg-[#1a4977] text-white px-4 py-2 rounded-md text-sm font-medium" onclick="window.location.href='sign-up.php'">Sign In</button>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <?php
+                            $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : null;
+                            if (!$user_name) {
+                                $uid = $_SESSION['user_id'];
+                                $stmt = $conn->prepare("SELECT name FROM users WHERE id = ? LIMIT 1");
+                                $stmt->bind_param("i", $uid);
+                                $stmt->execute();
+                                $stmt->bind_result($user_name);
+                                $stmt->fetch();
+                                $stmt->close();
+                                $_SESSION['user_name'] = $user_name;
+                            }
+                            ?>
+                            <span class="text-[#1a4977] font-semibold px-3 py-2 text-sm">Hello, <?php echo htmlspecialchars($user_name); ?></span>
+                            <form action="logout.php" method="post" style="display:inline;">
+                                <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium ml-2">Logout</button>
+                            </form>
+                        <?php else: ?>
+                            <button class="bg-[#1a4977] text-white px-4 py-2 rounded-md text-sm font-medium" onclick="window.location.href='sign-up.php'">Sign In</button>
+                        <?php endif; ?>
                     </div>
                     <div class="md:hidden">
                         <button class="text-gray-500">
@@ -250,7 +318,8 @@ $results_count_text = $total_properties . ($total_properties == 1 ? " Result Fou
                                 </svg>
                                 Filter
                             </button>
-                        <button id="searchButtonPg" class="bg-[#1a4977] text-white rounded-lg p-2 px-4 text-sm shadow-sm">Search</button>
+                            <button id="toggleMapButton" class="bg-white border rounded-lg p-2 px-4 text-sm flex items-center shadow-sm ml-2">Hide Map</button>
+                            <button id="searchButtonPg" class="bg-[#1a4977] text-white rounded-lg p-2 px-4 text-sm shadow-sm">Search</button>
                         </div>
                     </div>
                 </div>
@@ -305,55 +374,12 @@ $results_count_text = $total_properties . ($total_properties == 1 ? " Result Fou
                     <div class="mb-6">
                         <h3 class="font-medium text-sm mb-3">Amenities</h3>
                         <div class="grid grid-cols-2 gap-2" id="amenitiesFilterContainer">
-                            <!-- Assuming amenity IDs/values are like 'wifi', 'food', etc. -->
+                            <?php foreach ($all_amenities as $amenity): ?>
                             <div class="flex items-center">
-                                <input type="checkbox" id="amenity-wifi" value="WiFi" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-wifi" class="ml-2 text-sm text-gray-600">WiFi</label>
+                                <input type="checkbox" id="amenity-<?php echo htmlspecialchars($amenity); ?>" value="<?php echo htmlspecialchars($amenity); ?>" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
+                                <label for="amenity-<?php echo htmlspecialchars($amenity); ?>" class="ml-2 text-sm text-gray-600"><?php echo htmlspecialchars($amenity); ?></label>
                             </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-food" value="Food" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-food" class="ml-2 text-sm text-gray-600">Food</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-tv" value="TV" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-tv" class="ml-2 text-sm text-gray-600">TV</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-bathroom" value="Attached Bathroom" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-bathroom" class="ml-2 text-sm text-gray-600">Attached Bathroom</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-ac" value="AC" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-ac" class="ml-2 text-sm text-gray-600">AC</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-gym" value="Gym" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-gym" class="ml-2 text-sm text-gray-600">Gym</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-laundry" value="Laundry" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-laundry" class="ml-2 text-sm text-gray-600">Laundry</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-studyroom" value="Study Room" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-studyroom" class="ml-2 text-sm text-gray-600">Study Room</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-parking" value="Parking" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-parking" class="ml-2 text-sm text-gray-600">Parking</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-refrigerator" value="Refrigerator" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-refrigerator" class="ml-2 text-sm text-gray-600">Refrigerator</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-security" value="24/7 Security" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-security" class="ml-2 text-sm text-gray-600">24/7 Security</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="amenity-powerbackup" value="Power Backup" class="h-4 w-4 text-[#1a4977] rounded border-gray-300 focus:ring-[#1a4977]">
-                                <label for="amenity-powerbackup" class="ml-2 text-sm text-gray-600">Power Backup</label>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
 
@@ -479,9 +505,9 @@ $results_count_text = $total_properties . ($total_properties == 1 ? " Result Fou
                                     <!-- <span class="text-xs text-gray-500">0.5 km</span> -->
                                 </div>
                                 <div class="flex flex-wrap gap-1 mb-2">
-                                    <!-- Amenities: Static for now, to be made dynamic later -->
-                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">WiFi</span>
-                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">Food</span>
+                                    <?php $amenities = get_property_amenities($conn, $property['id']); foreach ($amenities as $amenity): ?>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full"><?php echo htmlspecialchars($amenity); ?></span>
+                                    <?php endforeach; ?>
                                 </div>
                                 <div class="mt-auto">
                                     <p class="font-medium text-sm mb-2">₹<?php echo htmlspecialchars(number_format((float)($property['base_price'] ?? 0))); ?><span class="text-xs text-gray-500">/month</span></p>
@@ -888,6 +914,71 @@ $results_count_text = $total_properties . ($total_properties == 1 ? " Result Fou
                         document.getElementById('resultsCount').textContent = '4 Results Found';
                     }
                 });
+            });
+
+            // Map Section
+            document.addEventListener('DOMContentLoaded', function() {
+                var defaultLat = <?php echo isset($_GET['lat']) ? floatval($_GET['lat']) : 20.5937; ?>;
+                var defaultLng = <?php echo isset($_GET['lng']) ? floatval($_GET['lng']) : 78.9629; ?>;
+                var map = L.map('map').setView([defaultLat, defaultLng], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // User's current location marker (blue)
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var userLat = position.coords.latitude;
+                        var userLng = position.coords.longitude;
+                        L.marker([userLat, userLng], {icon: L.icon({iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-blue.png', shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41], popupAnchor: [1,-34], shadowSize: [41,41]})})
+                            .addTo(map)
+                            .bindPopup('Your Current Location').openPopup();
+                    });
+                }
+
+                // Draggable search marker (red)
+                var searchMarker = L.marker([defaultLat, defaultLng], {
+                    draggable: true,
+                    icon: L.icon({iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-red.png', shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41], popupAnchor: [1,-34], shadowSize: [41,41]})
+                }).addTo(map)
+                .bindPopup('Drag me or click on the map to set search location.<br>PGs will be shown near this point.')
+                .openPopup();
+
+                searchMarker.on('dragend', function(e) {
+                    var pos = searchMarker.getLatLng();
+                    updateLocation(pos.lat, pos.lng);
+                });
+                map.on('click', function(e) {
+                    searchMarker.setLatLng(e.latlng);
+                    updateLocation(e.latlng.lat, e.latlng.lng);
+                });
+                function updateLocation(lat, lng) {
+                    var params = new URLSearchParams(window.location.search);
+                    params.set('lat', lat);
+                    params.set('lng', lng);
+                    window.location.search = params.toString();
+                }
+
+                // Show PGs as markers
+                <?php foreach ($properties as $property):
+                    if (!empty($property['latitude']) && !empty($property['longitude'])): ?>
+                    L.marker([<?php echo $property['latitude']; ?>, <?php echo $property['longitude']; ?>])
+                        .addTo(map)
+                        .bindPopup(`<?php echo addslashes(htmlspecialchars($property['name'])); ?><br><a href='view-details.php?id=<?php echo $property['id']; ?>' target='_blank'>View Details</a>`);
+                <?php endif; endforeach; ?>
+            });
+
+            // Map toggle logic
+            var mapDiv = document.getElementById('map');
+            var toggleMapBtn = document.getElementById('toggleMapButton');
+            toggleMapBtn.addEventListener('click', function() {
+                if (mapDiv.style.display === 'none') {
+                    mapDiv.style.display = '';
+                    toggleMapBtn.textContent = 'Hide Map';
+                } else {
+                    mapDiv.style.display = 'none';
+                    toggleMapBtn.textContent = 'Show Map';
+                }
             });
         });
     </script>

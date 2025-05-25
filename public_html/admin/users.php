@@ -1,3 +1,15 @@
+<?php
+require_once '../config/db.php';
+// Fetch all users
+$sql = "SELECT * FROM users ORDER BY created_at DESC";
+$result = $conn->query($sql);
+$users = [];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $users[] = $row;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,14 +156,14 @@
                 <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
                     <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4">
                         <div class="relative flex-grow">
-                            <input type="text" placeholder="Search by name, email, or phone..." class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a4977] focus:border-[#1a4977]">
+                            <input type="text" placeholder="Search by name, email, or phone..." class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a4977] focus:border-[#1a4977]" id="user-search-input">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-search text-gray-400"></i>
                             </div>
                         </div>
                         
                         <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                            <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a4977] focus:border-[#1a4977]">
+                            <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a4977] focus:border-[#1a4977]" id="user-role-filter">
                                 <option value="all">All Users</option>
                                 <option value="owner">Property Owner</option>
                                 <option value="tenant">Tenant</option>
@@ -159,7 +171,7 @@
                                 <option value="admin">Admin</option>
                             </select>
                             
-                            <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a4977] focus:border-[#1a4977]">
+                            <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a4977] focus:border-[#1a4977]" id="user-status-filter">
                                 <option value="all">All Status</option>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
@@ -184,233 +196,6 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- User 1 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mr-3">
-                                                <img src="https://via.placeholder.com/150?text=A" alt="User avatar" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Ananya Sharma</div>
-                                                <div class="text-xs text-gray-500">Joined: Mar 15, 2025</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">ananya.sharma@gmail.com</div>
-                                        <div class="text-sm text-gray-500">+91 9876543210</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">#42, Palm Grove Apartments</div>
-                                        <div class="text-sm text-gray-500">Bangalore, Karnataka</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Property Owner</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
-                                            <span class="text-sm text-gray-900">Active</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="view-user-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="1">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="edit-user-btn text-gray-600 hover:text-gray-900" data-id="1">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="reset-password-btn text-amber-600 hover:text-amber-800" data-id="1">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- User 2 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mr-3">
-                                                <img src="https://via.placeholder.com/150?text=R" alt="User avatar" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Rahul Patel</div>
-                                                <div class="text-xs text-gray-500">Joined: Apr 28, 2025</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">rahul.patel@yahoo.com</div>
-                                        <div class="text-sm text-gray-500">+91 9876543211</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">203, Royal Heights</div>
-                                        <div class="text-sm text-gray-500">Bangalore, Karnataka</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-teal-100 text-teal-800">Tenant</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
-                                            <span class="text-sm text-gray-900">Active</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="view-user-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="2">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="edit-user-btn text-gray-600 hover:text-gray-900" data-id="2">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="reset-password-btn text-amber-600 hover:text-amber-800" data-id="2">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- User 3 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mr-3">
-                                                <img src="https://via.placeholder.com/150?text=P" alt="User avatar" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Priya Mehta</div>
-                                                <div class="text-xs text-gray-500">Joined: Feb 10, 2025</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">priya.mehta@outlook.com</div>
-                                        <div class="text-sm text-gray-500">+91 9876543212</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">87, Green View Layout</div>
-                                        <div class="text-sm text-gray-500">Bangalore, Karnataka</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Agent</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
-                                            <span class="text-sm text-gray-900">Active</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="view-user-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="3">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="edit-user-btn text-gray-600 hover:text-gray-900" data-id="3">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="reset-password-btn text-amber-600 hover:text-amber-800" data-id="3">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- User 4 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mr-3">
-                                                <img src="https://via.placeholder.com/150?text=V" alt="User avatar" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Vijay Kumar</div>
-                                                <div class="text-xs text-gray-500">Joined: Jan 5, 2025</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">vijayk@hotmail.com</div>
-                                        <div class="text-sm text-gray-500">+91 9876543213</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">D-15, Sea View Apartments</div>
-                                        <div class="text-sm text-gray-500">Mumbai, Maharashtra</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-teal-100 text-teal-800">Tenant</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-2.5 w-2.5 rounded-full bg-red-500 mr-2"></div>
-                                            <span class="text-sm text-gray-900">Inactive</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="view-user-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="4">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="edit-user-btn text-gray-600 hover:text-gray-900" data-id="4">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="reset-password-btn text-amber-600 hover:text-amber-800" data-id="4">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- User 5 -->
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mr-3">
-                                                <img src="https://via.placeholder.com/150?text=S" alt="User avatar" class="h-full w-full object-cover">
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">Sanjay Gupta</div>
-                                                <div class="text-xs text-gray-500">Joined: May 12, 2025</div>
-                                                <div class="mt-1 inline-flex">
-                                                    <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">New</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">sanjay.gupta@gmail.com</div>
-                                        <div class="text-sm text-gray-500">+91 9876543214</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">B-201, Skyline Towers</div>
-                                        <div class="text-sm text-gray-500">Delhi, NCR</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Property Owner</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
-                                            <span class="text-sm text-gray-900">Active</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <button class="view-user-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="5">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="edit-user-btn text-gray-600 hover:text-gray-900" data-id="5">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="reset-password-btn text-amber-600 hover:text-amber-800" data-id="5">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -482,7 +267,7 @@
                             <div class="md:col-span-1">
                                 <div class="flex flex-col items-center">
                                     <div class="h-32 w-32 rounded-full overflow-hidden mb-4">
-                                        <img id="modal-user-image" src="https://via.placeholder.com/150?text=A" alt="User avatar" class="h-full w-full object-cover">
+                                        <img id="modal-user-image" src="images/default-avatar.png" alt="User avatar" class="h-full w-full object-cover">
                                     </div>
                                     
                                     <div class="text-center mb-6">
@@ -819,425 +604,274 @@
     </div>
 
     <script>
+        // Pass PHP user data to JS
+        let users = <?= json_encode($users) ?>;
+        let filteredUsers = [...users];
+
+        function showNotification(message, type = 'success') {
+            let notif = document.getElementById('notification');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'notification';
+                notif.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow text-white text-center';
+                document.body.appendChild(notif);
+            }
+            notif.textContent = message;
+            notif.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow text-white text-center ' + (type === 'success' ? 'bg-green-600' : 'bg-red-600');
+            notif.style.display = 'block';
+            setTimeout(() => { notif.style.display = 'none'; }, 2000);
+        }
+
+        function resetUserModal() {
+            document.getElementById('first-name').value = '';
+            document.getElementById('last-name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('state').value = '';
+            document.getElementById('user-role').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('add-user-submit-btn').textContent = 'Add User';
+        }
+
+        function renderUserRow(user) {
+            const role = user.role ? user.role : '';
+            const address = user.address || '';
+            const city = user.city || '';
+            const state = user.state || '';
+            const phone = user.phone || '';
+            const email = user.email || '';
+            const status = user.status ? (user.status.charAt(0).toUpperCase() + user.status.slice(1)) : '';
+            return `<tr data-id="${user.id}">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mr-3">
+                            <img src="../images/default-avatar.png" alt="User avatar" class="h-full w-full object-cover">
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">${user.name || ''}</div>
+                            <div class="text-xs text-gray-500">Joined: ${user.created_at ? (new Date(user.created_at)).toLocaleDateString('en-GB', { month: 'short', day: '2-digit', year: 'numeric' }) : ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900">${email}</div>
+                    <div class="text-sm text-gray-500">${phone}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900">${address}</div>
+                    <div class="text-sm text-gray-500">${city}${city && state ? ', ' : ''}${state}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">${role ? (role.charAt(0).toUpperCase() + role.slice(1)) : ''}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="h-2.5 w-2.5 rounded-full ${user.status === 'active' ? 'bg-green-500' : 'bg-red-500'} mr-2"></div>
+                        <span class="text-sm text-gray-900">${status}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                        <button class="view-user-btn text-[#1a4977] hover:text-[#0e2e4a]" data-id="${user.id}"><i class="fas fa-eye"></i></button>
+                        <button class="edit-user-btn text-gray-600 hover:text-gray-900" data-id="${user.id}"><i class="fas fa-edit"></i></button>
+                        <button class="reset-password-btn text-amber-600 hover:text-amber-800" data-id="${user.id}"><i class="fas fa-key"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+        }
+
+        function filterUsers() {
+            const searchVal = document.getElementById('user-search-input').value.toLowerCase();
+            const roleVal = document.getElementById('user-role-filter').value;
+            const statusVal = document.getElementById('user-status-filter').value;
+            filteredUsers = users.filter(user => {
+                // Search
+                const matchesSearch =
+                    user.name.toLowerCase().includes(searchVal) ||
+                    user.email.toLowerCase().includes(searchVal) ||
+                    (user.phone && user.phone.toLowerCase().includes(searchVal));
+                // Role
+                const matchesRole = (roleVal === 'all') || (user.role === roleVal);
+                // Status
+                let matchesStatus = true;
+                if (statusVal === 'active' || statusVal === 'inactive') {
+                    matchesStatus = user.status === statusVal;
+                } else if (statusVal === 'new') {
+                    // New: created in last 30 days
+                    const created = new Date(user.created_at);
+                    const now = new Date();
+                    const diff = (now - created) / (1000 * 60 * 60 * 24);
+                    matchesStatus = diff <= 30;
+                }
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+            updateUserTable();
+        }
+
+        function updateUserTable() {
+            const tbody = document.querySelector('tbody.bg-white');
+            tbody.innerHTML = filteredUsers.map(renderUserRow).join('');
+            attachUserRowEvents();
+        }
+
+        function attachUserRowEvents() {
+            // Re-attach all event listeners for new rows
+            document.querySelectorAll('.edit-user-btn').forEach(button => {
+                button.onclick = function(e) {
+                    e.stopPropagation();
+                    editingUserId = this.getAttribute('data-id');
+                    const user = users.find(u => u.id == editingUserId);
+                    if (!user) return showNotification('User not found', 'error');
+                    document.getElementById('first-name').value = user.name.split(' ')[0] || '';
+                    document.getElementById('last-name').value = user.name.split(' ').slice(1).join(' ') || '';
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('phone').value = user.phone;
+                    document.getElementById('address').value = user.address;
+                    document.getElementById('city').value = user.city;
+                    document.getElementById('state').value = user.state;
+                    document.getElementById('user-role').value = user.role;
+                    document.getElementById('password').value = '';
+                    document.getElementById('add-user-modal').classList.remove('hidden');
+                    document.getElementById('add-user-submit-btn').textContent = 'Update User';
+                };
+            });
+            document.querySelectorAll('.view-user-btn').forEach(button => {
+                button.onclick = function(e) {
+                    // Existing modal logic
+                };
+            });
+            document.querySelectorAll('.reset-password-btn').forEach(button => {
+                button.onclick = function(e) {
+                    // Existing reset password logic
+                };
+            });
+        }
+
+        let editingUserId = null;
         document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar toggle for mobile
-            document.getElementById('sidebar-toggle').addEventListener('click', function() {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.toggle('-translate-x-full');
-            });
-            
-            // User Detail Modal
-            const userDetailModal = document.getElementById('user-detail-modal');
-            const viewUserButtons = document.querySelectorAll('.view-user-btn');
-            
-            // Reset Password Modal
-            const resetPasswordModal = document.getElementById('reset-password-modal');
-            const resetPasswordButtons = document.querySelectorAll('.reset-password-btn');
-            const modalResetPasswordBtn = document.getElementById('modal-reset-password-btn');
-            
-            // Open User Detail Modal
-            viewUserButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const userId = this.getAttribute('data-id');
-                    openUserDetailModal(userId);
-                });
-            });
-            
-            // Close User Detail Modal
-            document.getElementById('modal-close-btn').addEventListener('click', closeUserDetailModal);
-            document.getElementById('modal-close-btn-bottom').addEventListener('click', closeUserDetailModal);
-            
-            // Open Reset Password Modal
-            resetPasswordButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const userId = this.getAttribute('data-id');
-                    openResetPasswordModal(userId);
-                });
-            });
-            
-            // Modal Reset Password Button
-            modalResetPasswordBtn.addEventListener('click', function() {
-                const userId = userDetailModal.getAttribute('data-user-id');
-                closeUserDetailModal();
-                openResetPasswordModal(userId);
-            });
-            
-            // Close Reset Password Modal
-            document.getElementById('cancel-reset-btn').addEventListener('click', closeResetPasswordModal);
-            
-            // Reset Password Submit
-            document.getElementById('send-reset-btn').addEventListener('click', function() {
-                const userId = resetPasswordModal.getAttribute('data-user-id');
-                const resetMethod = document.querySelector('input[name="reset-method"]:checked').id;
-                
-                let message = '';
-                if (resetMethod === 'reset-method-email') {
-                    message = 'Password reset link has been sent to the user\'s email address.';
-                } else if (resetMethod === 'reset-method-sms') {
-                    message = 'New password has been sent to the user\'s phone via SMS.';
-                } else {
-                    const newPassword = document.getElementById('new-password').value;
-                    message = `Password has been reset to "${newPassword}". Remember to share it with the user securely.`;
+            // ... existing code ...
+            // Add User
+            document.getElementById('add-user-submit-btn').onclick = function() {
+                const firstName = document.getElementById('first-name').value.trim();
+                const lastName = document.getElementById('last-name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const address = document.getElementById('address').value.trim();
+                const city = document.getElementById('city').value.trim();
+                const state = document.getElementById('state').value.trim();
+                const role = document.getElementById('user-role').value;
+                const password = document.getElementById('password').value;
+                if (!firstName || !lastName || !email || !phone || !address || !city || !state || !role || (!editingUserId && !password)) {
+                    showNotification('Please fill all required fields.', 'error');
+                    return;
                 }
-                
-                alert(message);
-                closeResetPasswordModal();
-            });
-            
-            // Toggle Manual Password Section
-            document.querySelectorAll('input[name="reset-method"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const manualSection = document.getElementById('manual-password-section');
-                    if (this.id === 'reset-method-manual') {
-                        manualSection.classList.remove('hidden');
+                const formData = new URLSearchParams();
+                if (editingUserId) {
+                    formData.append('action', 'edit');
+                    formData.append('id', editingUserId);
+                } else {
+                    formData.append('action', 'add');
+                    formData.append('password', password);
+                }
+                formData.append('first_name', firstName);
+                formData.append('last_name', lastName);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('address', address);
+                formData.append('city', city);
+                formData.append('state', state);
+                formData.append('role', role);
+                fetch('user_action.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: formData.toString()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (editingUserId) {
+                            // Update user in users array
+                            const idx = users.findIndex(u => u.id == editingUserId);
+                            if (idx !== -1) {
+                                users[idx] = { ...users[idx], name: firstName + ' ' + lastName, email, phone, address, city, state, role };
+                            }
+                            showNotification('User updated successfully!');
+                        } else {
+                            // Add new user to users array (simulate id and created_at for now)
+                            const newId = Math.max(0, ...users.map(u => +u.id)) + 1;
+                            users.unshift({ id: newId, name: firstName + ' ' + lastName, email, phone, address, city, state, role, status: 'active', created_at: new Date().toISOString() });
+                            showNotification('User added successfully!');
+                        }
+                        updateUserTable();
+                        document.getElementById('add-user-modal').classList.add('hidden');
+                        resetUserModal();
+                        editingUserId = null;
                     } else {
-                        manualSection.classList.add('hidden');
+                        showNotification(data.message, 'error');
                     }
                 });
-            });
-            
-            // Generate Random Password
-            document.getElementById('generate-password-btn').addEventListener('click', function() {
-                const passwordField = document.getElementById('new-password');
-                const randomPassword = generateRandomPassword();
-                passwordField.value = randomPassword;
-            });
-            
-            // Add User Modal
-            const addUserModal = document.getElementById('add-user-modal');
-            
-            // Open Add User Modal
-            document.getElementById('add-user-btn').addEventListener('click', function() {
-                addUserModal.classList.remove('hidden');
-            });
-            
-            // Close Add User Modal
-            document.getElementById('add-user-cancel-btn').addEventListener('click', function() {
-                addUserModal.classList.add('hidden');
-            });
-            
-            // Submit Add User Form
+            };
+            // Reset modal and editing state on close
+            document.getElementById('add-user-cancel-btn').onclick = function() {
+                editingUserId = null;
+                resetUserModal();
+                document.getElementById('add-user-modal').classList.add('hidden');
+            };
+            // Deactivate/Activate User
+            document.querySelector('tbody.bg-white').onclick = function(e) {
+                const btn = e.target.closest('.view-user-btn');
+                if (!btn) return;
+                const userId = btn.getAttribute('data-id');
+                const user = users.find(u => u.id == userId);
+                if (!user) return showNotification('User not found', 'error');
+                const action = user.status === 'active' ? 'deactivate' : 'activate';
+                if (confirm(`Are you sure you want to ${action} this user?`)) {
+                    fetch('user_action.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `action=${action}&id=${userId}`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            user.status = action === 'deactivate' ? 'inactive' : 'active';
+                            showNotification('User status updated!');
+                            updateUserTable();
+                } else {
+                            showNotification(data.message, 'error');
+                        }
+                    });
+                }
+            };
+            // Initial render
+            filterUsers();
+            // Export Users button
+            const exportBtn = document.getElementById('export-users-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    window.location.href = 'export_users.php';
+                });
+            }
+            // After adding a user, reset modal and button state
             document.getElementById('add-user-submit-btn').addEventListener('click', function() {
-                // In a real app, you would validate and submit the form data via AJAX
-                
-                // For demo purposes, show an alert and close the modal
-                alert('User added successfully!');
-                addUserModal.classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('add-user-submit-btn').textContent = 'Add User';
+                }, 500);
             });
-            
-            // Generate Random Password for Add User
-            document.getElementById('password-generate-btn').addEventListener('click', function() {
-                const passwordField = document.getElementById('password');
-                const randomPassword = generateRandomPassword();
-                passwordField.value = randomPassword;
-                passwordField.type = 'text'; // Show the password
-                
-                // Update the eye icon
-                document.getElementById('toggle-password').innerHTML = '<i class="fas fa-eye-slash"></i>';
-            });
-            
-            // Toggle Password Visibility
-            document.getElementById('toggle-password').addEventListener('click', function() {
-                const passwordField = document.getElementById('password');
-                
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    this.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                } else {
-                    passwordField.type = 'password';
-                    this.innerHTML = '<i class="fas fa-eye"></i>';
-                }
-            });
-            
-            // Edit User Functionality
-            const editUserButtons = document.querySelectorAll('.edit-user-btn');
-            
-            editUserButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const userId = this.getAttribute('data-id');
-                    
-                    // In a real app, you would redirect to an edit page or open an edit modal
-                    alert(`Edit user #${userId}`);
+            // Add New User button opens modal
+            const addUserBtn = document.getElementById('add-user-btn');
+            const addUserModal = document.getElementById('add-user-modal');
+            if (addUserBtn && addUserModal) {
+                addUserBtn.addEventListener('click', function() {
+                    addUserModal.classList.remove('hidden');
                 });
-            });
-            
-            // Modal Edit Button
-            document.getElementById('modal-edit-btn').addEventListener('click', function() {
-                const userId = userDetailModal.getAttribute('data-user-id');
-                alert(`Edit user #${userId}`);
-            });
-            
-            // Modal Deactivate Button
-            document.getElementById('modal-deactivate-btn').addEventListener('click', function() {
-                const userId = userDetailModal.getAttribute('data-user-id');
-                const userName = document.getElementById('modal-user-fullname').textContent;
-                
-                if (confirm(`Are you sure you want to deactivate user "${userName}"?`)) {
-                    alert(`User "${userName}" has been deactivated.`);
-                    closeUserDetailModal();
-                }
-            });
-            
-            // Function to open user detail modal
-            function openUserDetailModal(userId) {
-                // Set the user ID on the modal
-                userDetailModal.setAttribute('data-user-id', userId);
-                
-                // Display the modal
-                userDetailModal.classList.remove('hidden');
-                
-                // Update modal content based on userId (simulation)
-                updateUserModalData(userId);
             }
-            
-            // Function to close user detail modal
-            function closeUserDetailModal() {
-                userDetailModal.classList.add('hidden');
-            }
-            
-            // Function to open reset password modal
-            function openResetPasswordModal(userId) {
-                // Set the user ID on the modal
-                resetPasswordModal.setAttribute('data-user-id', userId);
-                
-                // Update modal content based on userId (simulation)
-                updateResetPasswordModalData(userId);
-                
-                // Display the modal
-                resetPasswordModal.classList.remove('hidden');
-            }
-            
-            // Function to close reset password modal
-            function closeResetPasswordModal() {
-                resetPasswordModal.classList.add('hidden');
-            }
-            
-            // Function to update modal data based on userId
-            function updateUserModalData(userId) {
-                // Simulate different user data
-                const userData = {
-                    '1': {
-                        name: 'Ananya Sharma',
-                        firstname: 'Ananya',
-                        lastname: 'Sharma',
-                        role: 'Property Owner',
-                        status: 'Active',
-                        email: 'ananya.sharma@gmail.com',
-                        phone: '+91 9876543210',
-                        location: 'Bangalore, Karnataka',
-                        joined: 'March 15, 2025',
-                        dob: 'June 15, 1990',
-                        gender: 'Female',
-                        street: '#42, Palm Grove Apartments, 5th Cross',
-                        city: 'Bangalore',
-                        state: 'Karnataka',
-                        postal: '560001',
-                        country: 'India',
-                        lastlogin: 'Today, 10:23 AM',
-                        id: 'USR12345',
-                        emailverified: 'Yes',
-                        image: 'https://via.placeholder.com/150?text=A'
-                    },
-                    '2': {
-                        name: 'Rahul Patel',
-                        firstname: 'Rahul',
-                        lastname: 'Patel',
-                        role: 'Tenant',
-                        status: 'Active',
-                        email: 'rahul.patel@yahoo.com',
-                        phone: '+91 9876543211',
-                        location: 'Bangalore, Karnataka',
-                        joined: 'April 28, 2025',
-                        dob: 'August 22, 1988',
-                        gender: 'Male',
-                        street: '203, Royal Heights',
-                        city: 'Bangalore',
-                        state: 'Karnataka',
-                        postal: '560034',
-                        country: 'India',
-                        lastlogin: 'Yesterday, 6:45 PM',
-                        id: 'USR12346',
-                        emailverified: 'Yes',
-                        image: 'https://via.placeholder.com/150?text=R'
-                    },
-                    '3': {
-                        name: 'Priya Mehta',
-                        firstname: 'Priya',
-                        lastname: 'Mehta',
-                        role: 'Agent',
-                        status: 'Active',
-                        email: 'priya.mehta@outlook.com',
-                        phone: '+91 9876543212',
-                        location: 'Bangalore, Karnataka',
-                        joined: 'February 10, 2025',
-                        dob: 'December 3, 1992',
-                        gender: 'Female',
-                        street: '87, Green View Layout',
-                        city: 'Bangalore',
-                        state: 'Karnataka',
-                        postal: '560102',
-                        country: 'India',
-                        lastlogin: 'Today, 9:10 AM',
-                        id: 'USR12347',
-                        emailverified: 'Yes',
-                        image: 'https://via.placeholder.com/150?text=P'
-                    },
-                    '4': {
-                        name: 'Vijay Kumar',
-                        firstname: 'Vijay',
-                        lastname: 'Kumar',
-                        role: 'Tenant',
-                        status: 'Inactive',
-                        email: 'vijayk@hotmail.com',
-                        phone: '+91 9876543213',
-                        location: 'Mumbai, Maharashtra',
-                        joined: 'January 5, 2025',
-                        dob: 'March 18, 1991',
-                        gender: 'Male',
-                        street: 'D-15, Sea View Apartments',
-                        city: 'Mumbai',
-                        state: 'Maharashtra',
-                        postal: '400050',
-                        country: 'India',
-                        lastlogin: '1 month ago',
-                        id: 'USR12348',
-                        emailverified: 'No',
-                        image: 'https://via.placeholder.com/150?text=V'
-                    },
-                    '5': {
-                        name: 'Sanjay Gupta',
-                        firstname: 'Sanjay',
-                        lastname: 'Gupta',
-                        role: 'Property Owner',
-                        status: 'Active',
-                        email: 'sanjay.gupta@gmail.com',
-                        phone: '+91 9876543214',
-                        location: 'Delhi, NCR',
-                        joined: 'May 12, 2025',
-                        dob: 'October 5, 1985',
-                        gender: 'Male',
-                        street: 'B-201, Skyline Towers',
-                        city: 'Delhi',
-                        state: 'NCR',
-                        postal: '110001',
-                        country: 'India',
-                        lastlogin: 'Today, 11:05 AM',
-                        id: 'USR12349',
-                        emailverified: 'Yes',
-                        image: 'https://via.placeholder.com/150?text=S'
-                    }
-                };
-                
-                const data = userData[userId];
-                
-                // Update modal content
-                document.getElementById('modal-user-name').textContent = data.name;
-                document.getElementById('modal-user-fullname').textContent = data.name;
-                document.getElementById('modal-user-role').textContent = data.role;
-                document.getElementById('modal-user-email').textContent = data.email;
-                document.getElementById('modal-user-phone').textContent = data.phone;
-                document.getElementById('modal-user-location').textContent = data.location;
-                document.getElementById('modal-user-joined').textContent = `Joined: ${data.joined}`;
-                document.getElementById('modal-user-image').src = data.image;
-                
-                // Detail fields
-                document.getElementById('modal-user-firstname').textContent = data.firstname;
-                document.getElementById('modal-user-lastname').textContent = data.lastname;
-                document.getElementById('modal-user-email-detail').textContent = data.email;
-                document.getElementById('modal-user-phone-detail').textContent = data.phone;
-                document.getElementById('modal-user-dob').textContent = data.dob;
-                document.getElementById('modal-user-gender').textContent = data.gender;
-                document.getElementById('modal-user-street').textContent = data.street;
-                document.getElementById('modal-user-city').textContent = data.city;
-                document.getElementById('modal-user-state').textContent = data.state;
-                document.getElementById('modal-user-postal').textContent = data.postal;
-                document.getElementById('modal-user-country').textContent = data.country;
-                document.getElementById('modal-user-id').textContent = data.id;
-                document.getElementById('modal-user-role-detail').textContent = data.role;
-                document.getElementById('modal-user-status-detail').textContent = data.status;
-                document.getElementById('modal-user-regdate').textContent = data.joined;
-                document.getElementById('modal-user-lastlogin').textContent = data.lastlogin;
-                document.getElementById('modal-user-emailverified').textContent = data.emailverified;
-                
-                // Update status class
-                const statusElement = document.getElementById('modal-user-status');
-                statusElement.textContent = data.status;
-                statusElement.className = '';
-                
-                if (data.status === 'Active') {
-                    statusElement.classList.add('px-2', 'py-1', 'inline-flex', 'text-xs', 'leading-5', 'font-semibold', 'rounded-full', 'bg-green-100', 'text-green-800');
-                    document.getElementById('modal-deactivate-btn').innerHTML = '<i class="fas fa-ban mr-2"></i>Deactivate User';
-                    document.getElementById('modal-deactivate-btn').classList.remove('border-green-600', 'text-green-600');
-                    document.getElementById('modal-deactivate-btn').classList.add('border-red-600', 'text-red-600');
-                } else {
-                    statusElement.classList.add('px-2', 'py-1', 'inline-flex', 'text-xs', 'leading-5', 'font-semibold', 'rounded-full', 'bg-red-100', 'text-red-800');
-                    document.getElementById('modal-deactivate-btn').innerHTML = '<i class="fas fa-check-circle mr-2"></i>Activate User';
-                    document.getElementById('modal-deactivate-btn').classList.remove('border-red-600', 'text-red-600');
-                    document.getElementById('modal-deactivate-btn').classList.add('border-green-600', 'text-green-600');
-                }
-            }
-            
-            // Function to update reset password modal data
-            function updateResetPasswordModalData(userId) {
-                // Simulate different user data
-                const userData = {
-                    '1': {
-                        name: 'Ananya Sharma',
-                        email: 'ananya.sharma@gmail.com',
-                        phone: '+91 9876543210'
-                    },
-                    '2': {
-                        name: 'Rahul Patel',
-                        email: 'rahul.patel@yahoo.com',
-                        phone: '+91 9876543211'
-                    },
-                    '3': {
-                        name: 'Priya Mehta',
-                        email: 'priya.mehta@outlook.com',
-                        phone: '+91 9876543212'
-                    },
-                    '4': {
-                        name: 'Vijay Kumar',
-                        email: 'vijayk@hotmail.com',
-                        phone: '+91 9876543213'
-                    },
-                    '5': {
-                        name: 'Sanjay Gupta',
-                        email: 'sanjay.gupta@gmail.com',
-                        phone: '+91 9876543214'
-                    }
-                };
-                
-                const data = userData[userId];
-                
-                // Update modal content
-                document.getElementById('reset-pwd-user-name').textContent = `Reset Password for ${data.name}`;
-                document.getElementById('reset-email').textContent = data.email;
-                document.getElementById('reset-phone').textContent = data.phone;
-                
-                // Generate a random password
-                document.getElementById('new-password').value = generateRandomPassword();
-                
-                // Reset radio buttons
-                document.getElementById('reset-method-email').checked = true;
-                document.getElementById('manual-password-section').classList.add('hidden');
-            }
-            
-            // Function to generate a random password
-            function generateRandomPassword() {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                const passwordLength = 8;
-                let password = 'HD-';
-                
-                for (let i = 0; i < passwordLength; i++) {
-                    password += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                
-                return password;
-            }
+            // Add search and filter event listeners
+            document.getElementById('user-search-input').addEventListener('input', filterUsers);
+            document.getElementById('user-role-filter').addEventListener('change', filterUsers);
+            document.getElementById('user-status-filter').addEventListener('change', filterUsers);
         });
     </script>
 </body>

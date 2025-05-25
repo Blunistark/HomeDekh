@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Property | HomeDhek Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -183,25 +184,25 @@
                 <!-- Tabs Navigation -->
                 <div class="border-b border-gray-200 mb-6">
                     <nav class="flex -mb-px space-x-8" id="tabs">
-                        <button class="tab-btn border-b-2 border-[#1a4977] py-4 px-1 text-sm font-medium text-[#1a4977]" data-tab="basic-info">
+                        <button type="button" class="tab-btn border-b-2 border-[#1a4977] py-4 px-1 text-sm font-medium text-[#1a4977]" data-tab="basic-info">
                             Basic Info
                         </button>
-                        <button class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="images">
+                        <button type="button" class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="images">
                             Images
                         </button>
-                        <button class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="description">
+                        <button type="button" class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="description">
                             Description
                         </button>
-                        <button class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="rooms-pricing">
+                        <button type="button" class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="rooms-pricing">
                             Rooms & Pricing
                         </button>
-                        <button class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="amenities">
+                        <button type="button" class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="amenities">
                             Amenities
                         </button>
-                        <button class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="location">
+                        <button type="button" class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="location">
                             Location
                         </button>
-                        <button class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="contact">
+                        <button type="button" class="tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="contact">
                             Contact
                         </button>
                     </nav>
@@ -215,7 +216,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="property-name" class="block text-sm font-medium text-gray-700 mb-1">Property Name*</label>
-                                <input type="text" id="property-name" name="property-name" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. Sunshine PG for Girls" required>
+                                <input type="text" id="property-name" name="property-name" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. Sunshine PG for Girls">
                             </div>
                             
                             <div>
@@ -261,13 +262,13 @@
 
                             <div>
                                 <label for="property-price" class="block text-sm font-medium text-gray-700 mb-1">Base Price (₹/month)*</label>
-                                <input type="number" id="property-price" name="property-price" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 12000" required>
+                                <input type="number" id="property-price" name="property-price" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 12000">
                                 <p class="text-xs text-gray-500 mt-1">This is the starting price shown on listing cards (corresponds to `base_price` in DB)</p>
                             </div>
                         </div>
                         
                         <div class="flex justify-end mt-6">
-                            <button class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="images">
+                            <button type="button" class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="images">
                                 Save & Continue
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -337,11 +338,11 @@
                         </div>
                         
                         <div class="flex justify-between mt-6">
-                            <button class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="basic-info">
+                            <button type="button" class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="basic-info">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Previous
                             </button>
-                            <button class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="description">
+                            <button type="button" class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="description">
                                 Save & Continue
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -356,13 +357,13 @@
                         
                         <div class="mb-6">
                             <label for="short-description" class="block text-sm font-medium text-gray-700 mb-1">Short Description (Paragraph 1)*</label>
-                            <textarea id="short-description" name="short-description" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Write a brief introduction of your property (100-150 words)" required></textarea>
+                            <textarea id="short-description" name="short-description" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Write a brief introduction of your property (100-150 words)"></textarea>
                             <p class="text-xs text-gray-500 mt-1">This will be shown as the first paragraph on the property details page</p>
                         </div>
                         
                         <div class="mb-6">
                             <label for="long-description" class="block text-sm font-medium text-gray-700 mb-1">Detailed Description (Paragraph 2)*</label>
-                            <textarea id="long-description" name="long-description" rows="5" class="w-full border rounded-lg px-3 py-2" placeholder="Provide more details about your property, facilities, and what makes it special (200-300 words)" required></textarea>
+                            <textarea id="long-description" name="long-description" rows="5" class="w-full border rounded-lg px-3 py-2" placeholder="Provide more details about your property, facilities, and what makes it special (200-300 words)"></textarea>
                         </div>
                         
                         <div>
@@ -372,11 +373,11 @@
                         </div>
                         
                         <div class="flex justify-between mt-6">
-                            <button class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="images">
+                            <button type="button" class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="images">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Previous
                             </button>
-                            <button class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="rooms-pricing">
+                            <button type="button" class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="rooms-pricing">
                                 Save & Continue
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -389,7 +390,7 @@
                     <div class="bg-white rounded-lg shadow-sm p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-semibold text-gray-900">Rooms & Pricing</h2>
-                            <button id="add-room-type-btn" class="bg-[#1a4977] text-white px-3 py-1.5 rounded text-sm flex items-center">
+                            <button type="button" id="add-room-type-btn" class="bg-[#1a4977] text-white px-3 py-1.5 rounded text-sm flex items-center">
                                 <i class="fas fa-plus mr-2"></i>
                                 Add Room Type
                             </button>
@@ -437,11 +438,11 @@
                         </div>
                         
                         <div class="flex justify-between mt-6">
-                            <button class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="description">
+                            <button type="button" class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="description">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Previous
                             </button>
-                            <button class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="amenities">
+                            <button type="button" class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="amenities">
                                 Save & Continue
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -554,18 +555,18 @@
                                 <!-- Additional services will be added here -->
                             </div>
                             
-                            <button id="add-service-btn" class="mt-4 text-[#1a4977] text-sm flex items-center">
+                            <button type="button" id="add-service-btn" class="mt-4 text-[#1a4977] text-sm flex items-center">
                                 <i class="fas fa-plus mr-1"></i>
                                 Add Service
                             </button>
                         </div>
                         
                         <div class="flex justify-between mt-6">
-                            <button class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="rooms-pricing">
+                            <button type="button" class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="rooms-pricing">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Previous
                             </button>
-                            <button class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="location">
+                            <button type="button" class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="location">
                                 Save & Continue
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -581,16 +582,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Full Address*</label>
-                                <textarea id="address" name="address" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Enter the complete address" required></textarea>
+                                <textarea id="address" name="address" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Enter the complete address"></textarea>
                             </div>
                             
                             <div>
                                 <label for="landmark" class="block text-sm font-medium text-gray-700 mb-1">Landmark/Nearby*</label>
-                                <input type="text" id="landmark" name="landmark" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="e.g. Stanford University" required>
+                                <input type="text" id="landmark" name="landmark" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="e.g. Stanford University">
                                 
                                 <label for="distance" class="block text-sm font-medium text-gray-700 mb-1">Distance from Landmark*</label>
                                 <div class="flex">
-                                    <input type="text" id="distance" name="distance" class="w-24 border rounded-l-lg px-3 py-2" placeholder="e.g. 0.5" required>
+                                    <input type="text" id="distance" name="distance" class="w-24 border rounded-l-lg px-3 py-2" placeholder="e.g. 0.5">
                                     <span class="bg-gray-100 border-t border-r border-b rounded-r-lg px-3 py-2 text-gray-500">km</span>
                                 </div>
                             </div>
@@ -623,18 +624,18 @@
                                 <!-- Nearby places will be added here -->
                             </div>
                             
-                            <button id="add-nearby-place-btn" class="text-[#1a4977] text-sm flex items-center">
+                            <button type="button" id="add-nearby-place-btn" class="text-[#1a4977] text-sm flex items-center">
                                 <i class="fas fa-plus mr-1"></i>
                                 Add Nearby Place
                             </button>
                         </div>
                         
                         <div class="flex justify-between mt-6">
-                            <button class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="amenities">
+                            <button type="button" class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="amenities">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Previous
                             </button>
-                            <button class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="contact">
+                            <button type="button" class="tab-btn-next bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center" data-next="contact">
                                 Save & Continue
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -650,7 +651,7 @@
                         <div class="mb-6">
                             <div class="flex items-center mb-4">
                                 <div class="h-16 w-16 rounded-full overflow-hidden mr-4 relative">
-                                    <img id="contact-image-preview" src="https://via.placeholder.com/150?text=Upload" alt="Contact person" class="h-full w-full object-cover">
+                                    <img id="contact-image-preview" src="images/default-avatar.png" alt="Contact person" class="h-full w-full object-cover">
                                     <label for="contact-image-upload-trigger" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
                                         <i class="fas fa-camera text-white"></i>
                                     </label>
@@ -670,7 +671,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number*</label>
-                                    <input type="tel" id="contact-phone" name="contact-phone" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. +91 9876543210" required>
+                                    <input type="tel" id="contact-phone" name="contact-phone" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. +91 9876543210">
                                 </div>
                                 
                                 <div>
@@ -712,11 +713,11 @@
                         </div>
                         
                         <div class="flex justify-between mt-6">
-                            <button class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="location">
+                            <button type="button" class="tab-btn-prev border border-gray-300 text-gray-700 px-4 py-2 rounded-md flex items-center" data-prev="location">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Previous
                             </button>
-                            <button id="create-property-btn" class="bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center">
+                            <button type="button" id="create-property-btn" class="bg-[#1a4977] text-white px-4 py-2 rounded-md flex items-center">
                                 <i class="fas fa-check mr-2"></i>
                                 Create Property
                             </button>
@@ -803,6 +804,37 @@
         let galleryFiles = [];
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Remove all required attributes from form fields (we'll handle validation in JS)
+            document.querySelectorAll('#addPropertyForm [required]').forEach(el => el.removeAttribute('required'));
+            // Prevent Enter key from submitting the form except in textareas
+            document.getElementById('addPropertyForm').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                }
+            });
+            // Function to validate only the current tab
+            function validateCurrentTab(tabName) {
+                const currentTab = document.getElementById(`${tabName}-tab`);
+                // You can define required fields for each tab here if you want more control
+                const requiredFields = currentTab.querySelectorAll('input[required], textarea[required], select[required]');
+                for (const field of requiredFields) {
+                    if (!field.value.trim()) {
+                        let fieldName = field.id || field.name;
+                        if (field.labels && field.labels.length > 0) {
+                            fieldName = field.labels[0].innerText.replace('*', '').trim();
+                        } else {
+                            const label = document.querySelector(`label[for="${field.id}"]`);
+                            if (label) {
+                                fieldName = label.innerText.replace('*', '').trim();
+                            }
+                        }
+                        alert(`Please fill in the '${fieldName}' field.`);
+                        field.focus();
+                        return false;
+                    }
+                }
+                return true;
+            }
             // Sidebar toggle for mobile
             document.getElementById('sidebar-toggle').addEventListener('click', function() {
                 const sidebar = document.getElementById('sidebar');
@@ -825,7 +857,13 @@
             const prevTabButtons = document.querySelectorAll('.tab-btn-prev');
             
             nextTabButtons.forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(e) {
+                    console.log('Save & Continue clicked');
+                    const currentTabName = document.querySelector('.tab-content.active').id.replace('-tab', '');
+                    if (!validateCurrentTab(currentTabName)) {
+                        e.preventDefault();
+                        return;
+                    }
                     const nextTabName = this.getAttribute('data-next');
                     switchToTab(nextTabName);
                 });
@@ -833,6 +871,7 @@
             
             prevTabButtons.forEach(button => {
                 button.addEventListener('click', function() {
+                    console.log('Previous clicked');
                     const prevTabName = this.getAttribute('data-prev');
                     switchToTab(prevTabName);
                 });
@@ -894,18 +933,20 @@
             });
             
             // Gallery Image Upload
-            document.getElementById('gallery-image-upload').addEventListener('change', function(e) {
+            document.getElementById('gallery-image-trigger').addEventListener('change', function(e) {
                 if (e.target.files && e.target.files[0]) {
                     addGalleryImage(e.target.files[0]);
+                    this.value = ''; // Reset file input
                 }
             });
             
             // Multiple Images Upload
-            document.getElementById('multiple-images-upload').addEventListener('change', function(e) {
+            document.getElementById('multiple-images-trigger').addEventListener('change', function(e) {
                 if (e.target.files && e.target.files.length > 0) {
                     for (let i = 0; i < e.target.files.length; i++) {
                         addGalleryImage(e.target.files[i]);
                     }
+                    this.value = ''; // Reset file input
                 }
             });
             
@@ -936,30 +977,6 @@
                     container.insertBefore(imageDiv, uploadPlaceholder);
                 };
                 reader.readAsDataURL(file);
-            }
-            
-             // Gallery Image Upload (single trigger) - uses 'gallery-image-trigger'
-            const galleryImageTrigger = document.getElementById('gallery-image-trigger');
-            if(galleryImageTrigger) {
-                galleryImageTrigger.addEventListener('change', function(e) {
-                    if (e.target.files && e.target.files[0]) {
-                        addGalleryImage(e.target.files[0]);
-                        this.value = ''; // Reset file input
-                    }
-                });
-            }
-            
-            // Multiple Images Upload (trigger) - uses 'multiple-images-trigger'
-            const multipleImagesTrigger = document.getElementById('multiple-images-trigger');
-            if(multipleImagesTrigger){
-                multipleImagesTrigger.addEventListener('change', function(e) {
-                    if (e.target.files && e.target.files.length > 0) {
-                        for (let i = 0; i < e.target.files.length; i++) {
-                            addGalleryImage(e.target.files[i]);
-                        }
-                        this.value = ''; // Reset file input
-                    }
-                });
             }
             
             // Contact Image Upload - uses 'contact-image-upload-trigger'
@@ -1081,6 +1098,7 @@
 
             // Create Property Button
             document.getElementById('create-property-btn').addEventListener('click', function(event) {
+                console.log('Create Property button clicked');
                 event.preventDefault(); // Stop default browser submission
 
                 // Validate form fields
@@ -1187,6 +1205,13 @@
             addRoomType();
             addAdditionalService();
             addNearbyPlace();
+
+            // Prevent default form submission and always use custom validation and AJAX
+            document.getElementById('addPropertyForm').addEventListener('submit', function(e) {
+                console.log('Form submit event triggered');
+                e.preventDefault();
+                document.getElementById('create-property-btn').click();
+            });
         });
     </script>
     <script src="https://cdn.tailwindcss.com" defer></script>

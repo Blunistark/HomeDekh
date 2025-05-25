@@ -116,7 +116,7 @@
    
 
           <div class="zubuz-account-bottom">
-            <p>Already have an account? <a href="/sign-in.php">Log in here</a></p>
+            <p>Already have an account? <a href="./sign-in.php">Log in here</a></p>
           </div>
         </form>
       </div>

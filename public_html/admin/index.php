@@ -1,4 +1,23 @@
-
+<?php
+require_once '../config/db.php';
+session_start();
+$admin_name = isset($_SESSION['admin_name']) ? $_SESSION['admin_name'] : 'Admin User';
+// Stats
+$total_properties = $conn->query("SELECT COUNT(*) FROM properties")->fetch_row()[0] ?? 0;
+$active_listings = $conn->query("SELECT COUNT(*) FROM properties WHERE status='available'")->fetch_row()[0] ?? 0;
+$total_users = $conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0] ?? 0;
+$total_inquiries = $conn->query("SELECT COUNT(*) FROM inquiries")->fetch_row()[0] ?? 0;
+// Recent Properties
+$recent_properties = [];
+$res = $conn->query("SELECT id, name, property_type, created_at, status FROM properties ORDER BY created_at DESC LIMIT 4");
+if ($res) while ($row = $res->fetch_assoc()) $recent_properties[] = $row;
+// Recent Inquiries (join with properties for property name)
+$recent_inquiries = [];
+if ($conn->query("SHOW TABLES LIKE 'inquiries'")->num_rows) {
+  $res = $conn->query("SELECT i.name, i.created_at, i.channel, i.status, p.name AS property_name FROM inquiries i LEFT JOIN properties p ON i.property_id = p.id ORDER BY i.created_at DESC LIMIT 4");
+  if ($res) while ($row = $res->fetch_assoc()) $recent_inquiries[] = $row;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,12 +86,16 @@
                     </button>
                 </div>
                 <div class="relative">
-                    <div class="flex items-center text-gray-700 focus:outline-none">
+                    <button id="admin-menu-toggle" class="flex items-center text-gray-700 focus:outline-none">
                         <div class="h-8 w-8 rounded-full bg-[#1a4977] flex items-center justify-center text-white">
-                            A
+                            <?php echo strtoupper(substr($admin_name, 0, 1)); ?>
                         </div>
-                        <span class="ml-2 text-sm font-medium hidden md:block">Admin User</span>
+                        <span class="ml-2 text-sm font-medium hidden md:block" id="admin-name-display"><?php echo htmlspecialchars($admin_name); ?></span>
                         <i class="fas fa-chevron-down ml-2 text-xs hidden md:block"></i>
+                    </button>
+                    <div id="admin-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden">
+                        <div class="px-4 py-2 text-sm text-gray-700 border-b">Logged in as <span class="font-semibold"><?php echo htmlspecialchars($admin_name); ?></span></div>
+                        <a href="../auth/logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
                     </div>
                 </div>
             </div>
@@ -145,7 +168,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Total Properties</p>
-                                <p class="text-2xl font-bold text-gray-800 mt-2">27</p>
+                                <p class="text-2xl font-bold text-gray-800 mt-2"><?php echo $total_properties; ?></p>
                             </div>
                             <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                                 <i class="fas fa-building"></i>
@@ -162,7 +185,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Active Listings</p>
-                                <p class="text-2xl font-bold text-gray-800 mt-2">22</p>
+                                <p class="text-2xl font-bold text-gray-800 mt-2"><?php echo $active_listings; ?></p>
                             </div>
                             <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
                                 <i class="fas fa-check-circle"></i>
@@ -179,7 +202,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Registered Users</p>
-                                <p class="text-2xl font-bold text-gray-800 mt-2">124</p>
+                                <p class="text-2xl font-bold text-gray-800 mt-2"><?php echo $total_users; ?></p>
                             </div>
                             <div class="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
                                 <i class="fas fa-users"></i>
@@ -196,7 +219,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Inquiries (May)</p>
-                                <p class="text-2xl font-bold text-gray-800 mt-2">78</p>
+                                <p class="text-2xl font-bold text-gray-800 mt-2"><?php echo $total_inquiries; ?></p>
                             </div>
                             <div class="h-12 w-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
                                 <i class="fas fa-comment-dots"></i>
@@ -297,109 +320,32 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <!-- Property 1 -->
+                                    <?php foreach ($recent_properties as $p): ?>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="h-10 w-10 rounded-md overflow-hidden">
-                                                    <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
+                                                    <img src="../images/default-avatar.png" alt="Property" class="h-full w-full object-cover">
                                                 </div>
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Sunshine PG for Girls</div>
+                                                    <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($p['name']); ?></div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">PG</div>
+                                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($p['property_type'] ?? '-'); ?></div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">May 15, 2025</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo $p['created_at'] ? date('M d, Y', strtotime($p['created_at'])) : '-'; ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Active
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo ($p['status'] === 'available') ? 'bg-green-100 text-green-800' : (($p['status'] === 'pending') ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'); ?>">
+                                                <?php echo ucfirst($p['status'] ?? '-'); ?>
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <a href="edit-property.php?id=1" class="text-[#1a4977] hover:underline">Edit</a>
+                                            <a href="edit-property.php?id=<?php echo $p['id']; ?>" class="text-[#1a4977] hover:underline">Edit</a>
                                         </td>
                                     </tr>
-                                    
-                                    <!-- Property 2 -->
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="h-10 w-10 rounded-md overflow-hidden">
-                                                    <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Campus View Residency</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">Hostel</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">May 14, 2025</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Active
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <a href="edit-property.php?id=2" class="text-[#1a4977] hover:underline">Edit</a>
-                                        </td>
-                                    </tr>
-                                    
-                                    <!-- Property 3 -->
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="h-10 w-10 rounded-md overflow-hidden">
-                                                    <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Green Valley Boys Hostel</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">Hostel</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">May 13, 2025</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                Pending
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <a href="edit-property.php?id=3" class="text-[#1a4977] hover:underline">Edit</a>
-                                        </td>
-                                    </tr>
-                                    
-                                    <!-- Property 4 -->
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="h-10 w-10 rounded-md overflow-hidden">
-                                                    <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Property" class="h-full w-full object-cover">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Bliss Ladies Hostel</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">PG</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">May 12, 2025</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Active
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <a href="edit-property.php?id=4" class="text-[#1a4977] hover:underline">Edit</a>
-                                        </td>
-                                    </tr>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -412,81 +358,25 @@
                             <a href="inquiries.php" class="text-sm text-[#1a4977]">View all</a>
                         </div>
                         <div class="divide-y divide-gray-200">
-                            <!-- Inquiry 1 -->
+                            <?php foreach ($recent_inquiries as $inq): ?>
                             <div class="px-6 py-4">
                                 <div class="flex justify-between mb-1">
-                                    <p class="text-sm font-medium text-gray-900">Raj Sharma</p>
-                                    <p class="text-xs text-gray-500">2 hours ago</p>
+                                    <p class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($inq['name']); ?></p>
+                                    <p class="text-xs text-gray-500"><?php echo $inq['created_at'] ? date('M d, Y H:i', strtotime($inq['created_at'])) : '-'; ?></p>
                                 </div>
-                                <p class="text-sm text-gray-600 mb-2">Inquiry about Sunshine PG for Girls</p>
+                                <p class="text-sm text-gray-600 mb-2">Inquiry about <?php echo htmlspecialchars($inq['property_name'] ?? '-'); ?></p>
                                 <div class="flex">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                                         <i class="fas fa-phone-alt mr-1"></i>
-                                        Via Call
+                                        <?php echo htmlspecialchars($inq['channel'] ?? 'Call'); ?>
                                     </span>
-                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <?php echo ($inq['status'] === 'responded') ? 'bg-blue-100 text-blue-800' : (($inq['status'] === 'pending') ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'); ?>">
                                         <i class="fas fa-check mr-1"></i>
-                                        Responded
+                                        <?php echo ucfirst($inq['status'] ?? 'Pending'); ?>
                                     </span>
                                 </div>
                             </div>
-                            
-                            <!-- Inquiry 2 -->
-                            <div class="px-6 py-4">
-                                <div class="flex justify-between mb-1">
-                                    <p class="text-sm font-medium text-gray-900">Priya Patel</p>
-                                    <p class="text-xs text-gray-500">5 hours ago</p>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-2">Inquiry about Campus View Residency</p>
-                                <div class="flex">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fab fa-whatsapp mr-1"></i>
-                                        Via WhatsApp
-                                    </span>
-                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        Pending
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Inquiry 3 -->
-                            <div class="px-6 py-4">
-                                <div class="flex justify-between mb-1">
-                                    <p class="text-sm font-medium text-gray-900">Amit Singh</p>
-                                    <p class="text-xs text-gray-500">1 day ago</p>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-2">Inquiry about Green Valley Boys Hostel</p>
-                                <div class="flex">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                        <i class="fas fa-envelope mr-1"></i>
-                                        Via Email
-                                    </span>
-                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                        <i class="fas fa-check mr-1"></i>
-                                        Responded
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Inquiry 4 -->
-                            <div class="px-6 py-4">
-                                <div class="flex justify-between mb-1">
-                                    <p class="text-sm font-medium text-gray-900">Sanjay Kumar</p>
-                                    <p class="text-xs text-gray-500">2 days ago</p>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-2">Inquiry about Bliss Ladies Hostel</p>
-                                <div class="flex">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fab fa-whatsapp mr-1"></i>
-                                        Via WhatsApp
-                                    </span>
-                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-user-slash mr-1"></i>
-                                        Not Interested
-                                    </span>
-                                </div>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
@@ -661,6 +551,19 @@
             
             // Periodically check for new notifications
             setInterval(checkNotifications, 60000); // Check every minute
+            
+            // Admin menu dropdown
+            const adminMenuToggle = document.getElementById('admin-menu-toggle');
+            const adminMenu = document.getElementById('admin-menu');
+            if (adminMenuToggle && adminMenu) {
+                adminMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    adminMenu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function() {
+                    adminMenu.classList.add('hidden');
+                });
+            }
         });
         
         // Function to check for notifications
